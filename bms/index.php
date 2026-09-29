@@ -453,12 +453,18 @@ function format_money($amount) {
         .badge-rising-star { background: linear-gradient(135deg, #38bdf8, #0284c7); color: white; border-color: #7dd3fc; }
         .badge-star { background: linear-gradient(135deg, #9ca3af, #4b5563); color: white; border-color: #d1d5db; }
         
-        .ht-stack { display: flex; flex-direction: column; align-items: flex-end; margin-left: auto; max-width: 48%;}
+        .ht-stack { display: flex; flex-direction: column; align-items: flex-end; margin-left: auto; width: 192px; max-width: 52%; flex-shrink: 0;}
         .ht-title { font-size: 9px; color: rgba(255,255,255,0.5); font-weight: 700; letter-spacing: 0.5px; margin-bottom: 5px; text-transform: uppercase; }
-        .ht-avatars { display: flex; justify-content: flex-end; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
-        .ht-person { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 54px; }
-        .ht-avatars img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--dark-blue); object-fit: cover; background: #fbbf24; }
-        .ht-role-tag { width: 100%; color: #fde68a; font-size: 7px; line-height: 1.2; font-weight: 700; text-align: center; overflow-wrap: anywhere; }
+        .ht-avatars { display: grid; grid-template-columns: repeat(4, 42px); justify-content: end; align-items: start; gap: 4px; width: 100%; }
+        .ht-person { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 42px; min-width: 0; }
+        .ht-avatars img { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--dark-blue); object-fit: cover; background: #fbbf24; }
+        .ht-role-tag { width: 100%; min-height: 14px; color: #fde68a; font-size: 6px; line-height: 1.15; font-weight: 700; text-align: center; overflow-wrap: anywhere; }
+        @media (max-width: 420px) {
+            .header-left { flex-wrap: wrap; }
+            .user-greeting { min-width: 0; }
+            .ht-stack { width: 100%; max-width: 100%; margin-left: 0; align-items: flex-start; }
+            .ht-avatars { justify-content: start; }
+        }
         
         .attendance-inline-bar { margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; text-align: center; width: 100%; gap: 5px;}
         .attendance-stat { flex: 1; border-right: 1px solid rgba(255,255,255,0.1); }
@@ -669,34 +675,34 @@ function format_money($amount) {
             <i class="fa-solid fa-triangle-exclamation alert-icon"></i>
             <div>
                 <strong style="color: #ef4444; font-size: 14px; display:block; margin-bottom: 3px;">Warning: Absence Limit Reached</strong>
-            <?php if ($group_id && $lead_role === 'Coordinator'): ?>
-            <div class="modal-overlay" id="modalChapterTargets">
-                <div class="modal-box">
-                    <i class="fa-solid fa-xmark close-modal" onclick="closeModal('modalChapterTargets')"></i>
-                    <h3 style="margin-top:0; color:white; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:10px;">Edit Chapter Targets</h3>
-                    <p style="font-size:12px; color:rgba(255,255,255,0.65); margin-bottom:18px;"><?php echo htmlspecialchars($group_name); ?> · This cycle</p>
-                    <form action="actions/update_chapter_targets.php" method="POST">
-                        <input type="hidden" name="group_id" value="<?php echo (int)$group_id; ?>">
-                        <div class="form-group">
-                            <label for="targetMembers">Active member target</label>
-                            <input id="targetMembers" type="number" name="target_members" class="glass-input" min="1" step="1" value="<?php echo (int)$target_members; ?>" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="targetLinks">Referral links target</label>
-                            <input id="targetLinks" type="number" name="target_links" class="glass-input" min="0" step="1" value="<?php echo (int)$target_links; ?>" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="targetRevenue">Revenue target (₹)</label>
-                            <input id="targetRevenue" type="number" name="target_revenue" class="glass-input" min="0" step="0.01" value="<?php echo htmlspecialchars((string)$target_rev); ?>" required>
-                        </div>
-                        <button type="submit" class="btn-primary" style="width:100%; padding:12px;"><i class="fa-solid fa-floppy-disk"></i> Save Targets</button>
-                    </form>
-                </div>
-            </div>
-            <?php endif; ?>
-
                 You currently have <strong><?php echo $mtg_absents; ?> absences</strong> within your rolling 6-month period. Please improve attendance to avoid membership suspension. 
                 <?php if ($mtg_absents >= 6) echo "<br><br><strong>ACTION REQUIRED: Contact Head Table immediately.</strong>"; ?>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($group_id && $lead_role === 'Coordinator'): ?>
+        <div class="modal-overlay" id="modalChapterTargets">
+            <div class="modal-box">
+                <i class="fa-solid fa-xmark close-modal" onclick="closeModal('modalChapterTargets')"></i>
+                <h3 style="margin-top:0; color:white; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:10px;">Edit Chapter Targets</h3>
+                <p style="font-size:12px; color:rgba(255,255,255,0.65); margin-bottom:18px;"><?php echo htmlspecialchars($group_name); ?> · This cycle</p>
+                <form action="actions/update_chapter_targets.php" method="POST">
+                    <input type="hidden" name="group_id" value="<?php echo (int)$group_id; ?>">
+                    <div class="form-group">
+                        <label for="targetMembers">Active member target</label>
+                        <input id="targetMembers" type="number" name="target_members" class="glass-input" min="1" step="1" value="<?php echo (int)$target_members; ?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="targetLinks">Referral links target</label>
+                        <input id="targetLinks" type="number" name="target_links" class="glass-input" min="0" step="1" value="<?php echo (int)$target_links; ?>" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="targetRevenue">Revenue target (₹)</label>
+                        <input id="targetRevenue" type="number" name="target_revenue" class="glass-input" min="0" step="0.01" value="<?php echo htmlspecialchars((string)$target_rev); ?>" required>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width:100%; padding:12px;"><i class="fa-solid fa-floppy-disk"></i> Save Targets</button>
+                </form>
             </div>
         </div>
     <?php endif; ?>
