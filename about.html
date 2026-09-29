@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | WeKonnects</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { 
+            theme: { 
+                extend: { 
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] }, 
+                    colors: { brandOrange: '#FF6B00', brandBlue: '#0F2046', brandWhite: '#FFFFFF', brandLightGray: '#F8F9FA' } 
+                } 
+            } 
+        }
+    </script>
+    <style>
+        .quote-mark { font-family: Georgia, serif; font-size: 6rem; line-height: 0; color: rgba(255, 107, 0, 0.2); position: absolute; top: 40px; left: -10px; z-index: -1; }
+    </style>
+</head>
+<body class="bg-brandWhite text-brandBlue font-sans antialiased flex flex-col min-h-screen overflow-x-hidden">
+
+    <div id="header-placeholder"></div>
+
+    <div class="relative pt-36 pb-20 bg-brandLightGray mt-10 border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center" data-aos="zoom-in">
+            <span class="text-brandOrange font-bold tracking-widest uppercase text-sm mb-2 block">Our Story</span>
+            <h1 class="text-5xl md:text-6xl font-extrabold text-brandBlue mb-6">Redefining How <br class="hidden md:block">Business is Done.</h1>
+            <p class="text-xl text-gray-600 font-medium max-w-3xl mx-auto leading-relaxed">
+                WeKonnects was built on a simple premise: professionals succeed when they stop competing and start collaborating. We are the architects of your referral pipeline.
+            </p>
+        </div>
+    </div>
+
+    <section class="py-20 bg-brandWhite">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-16 items-center">
+                
+                <div class="lg:w-5/12 relative" data-aos="fade-right">
+                    <div class="absolute inset-0 bg-brandOrange rounded-3xl transform translate-x-4 translate-y-4"></div>
+                    <img src="https://wekonnects.com/uploads/owner.JPG" alt="Saibabu - Founder of WeKonnects" class="relative z-10 rounded-3xl shadow-2xl border-4 border-brandWhite w-full object-cover h-[500px]">
+                </div>
+
+                <div class="lg:w-7/12" data-aos="fade-left" data-aos-delay="100">
+                    <h2 class="text-sm font-extrabold tracking-widest text-gray-400 uppercase mb-2">The Visionary</h2>
+                    <h3 class="text-4xl font-bold text-brandBlue mb-2">Meet Saibabu</h3>
+                    <p class="text-brandOrange font-bold text-lg mb-8">Founder & CEO, WeKonnects</p>
+                    
+                    <p class="text-lg text-gray-600 mb-6 leading-relaxed">
+                        Recognizing the limitations and high costs of traditional advertising, Saibabu envisioned a platform where local business owners could thrive through structured, accountable referral marketing. 
+                    </p>
+                    <p class="text-lg text-gray-600 mb-10 leading-relaxed">
+                        He built WeKonnects not just as a networking event, but as a rigid, results-driven community where members actively work as a sales team for one another. His leadership focuses on maintaining the highest ethical standards while maximizing the financial ROI for every single member.
+                    </p>
+
+                    <div class="relative bg-brandLightGray p-8 rounded-2xl border-l-4 border-brandOrange shadow-sm">
+                        <span class="quote-mark">"</span>
+                        <p class="text-xl font-bold text-brandBlue italic leading-relaxed relative z-10">
+                            "Your network is your net worth, but only if you cultivate it with absolute trust, strict accountability, and a genuine desire to see others succeed. True business growth accelerates the moment we stop competing and start collaborating."
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="py-24 bg-brandBlue text-brandWhite relative overflow-hidden">
+        <div class="absolute -right-40 -top-40 w-96 h-96 bg-brandOrange rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+        <div class="absolute -left-40 -bottom-40 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-sm font-extrabold tracking-widest text-blue-300 uppercase mb-2">The WeKonnects Standard</h2>
+                <h3 class="text-4xl md:text-5xl font-bold text-brandWhite mb-4">Our Core Values & Ethics</h3>
+                <p class="text-lg text-blue-200 max-w-2xl mx-auto">We do not accept just anyone. Our platform thrives because every member is held strictly to these four foundational pillars.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20 hover:bg-white/20 transition duration-300 transform hover:-translate-y-2" data-aos="fade-up" data-aos-delay="0">
+                    <div class="bg-brandOrange w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                    </div>
+                    <h4 class="text-xl font-bold mb-3 text-white">Trust & Integrity</h4>
+                    <p class="text-blue-200 text-sm leading-relaxed">We believe business should be done with a handshake you can count on. We strictly vet members to ensure ethical business practices.</p>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20 hover:bg-white/20 transition duration-300 transform hover:-translate-y-2" data-aos="fade-up" data-aos-delay="100">
+                    <div class="bg-brandOrange w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    </div>
+                    <h4 class="text-xl font-bold mb-3 text-white">Rigid Accountability</h4>
+                    <p class="text-blue-200 text-sm leading-relaxed">Talk is cheap. We track attendance, referrals, and closed business. If a member isn't contributing to the group's ROI, they lose their seat.</p>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20 hover:bg-white/20 transition duration-300 transform hover:-translate-y-2" data-aos="fade-up" data-aos-delay="200">
+                    <div class="bg-brandOrange w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    </div>
+                    <h4 class="text-xl font-bold mb-3 text-white">Total Exclusivity</h4>
+                    <p class="text-blue-200 text-sm leading-relaxed">One profession per chapter. By eliminating internal competition, we create a safe environment where members freely share their highest-value clients.</p>
+                </div>
+
+                <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20 hover:bg-white/20 transition duration-300 transform hover:-translate-y-2" data-aos="fade-up" data-aos-delay="300">
+                    <div class="bg-brandOrange w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path></svg>
+                    </div>
+                    <h4 class="text-xl font-bold mb-3 text-white">Givers Prosper</h4>
+                    <p class="text-blue-200 text-sm leading-relaxed">Our culture is built on giving first. We educate our members to constantly look out for business opportunities for others, knowing success will naturally return to them.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="bg-brandWhite py-20 text-center border-t border-gray-100 flex-grow">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6">
+            <h2 class="text-3xl md:text-4xl font-extrabold text-brandBlue mb-6">Ready to align with our values?</h2>
+            <p class="text-lg text-gray-600 mb-8">Join a community of professionals dedicated to mutual growth.</p>
+            <a href="contact.html" class="inline-block bg-brandOrange text-brandWhite font-extrabold text-lg px-10 py-4 rounded-full shadow-[0_10px_20px_rgba(255,107,0,0.3)] hover:bg-orange-600 transition transform hover:-translate-y-1">Apply for Membership</a>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script> 
+        AOS.init({ once: true }); 
+        fetch('header.html?v=6').then(r => r.text()).then(d => document.getElementById('header-placeholder').innerHTML = d);
+        fetch('footer.html?v=6').then(r => r.text()).then(d => document.getElementById('footer-placeholder').innerHTML = d);
+    </script>
+</body>
+</html>

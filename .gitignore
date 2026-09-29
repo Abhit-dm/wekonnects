@@ -1,0 +1,7 @@
+/bms/config/database.local.php
+/bms/assets/uploads/profiles/*
+!/bms/assets/uploads/profiles/default.png
+/output/
+/uploads/1.mp4
+*.sql
+*.log

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Franchise Opportunities | WeKonnects</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] }, colors: { brandOrange: '#FF6B00', brandBlue: '#0F2046', brandWhite: '#FFFFFF', brandLightGray: '#F8F9FA' } } } }
+    </script>
+</head>
+<body class="bg-brandWhite text-brandBlue font-sans antialiased flex flex-col min-h-screen">
+
+    <div id="header-placeholder"></div>
+
+    <div class="relative pt-32 pb-24 bg-brandBlue mt-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center" data-aos="zoom-in">
+            <h1 class="text-5xl md:text-6xl font-extrabold text-brandWhite mb-6">Own The Network.</h1>
+            <p class="text-xl text-blue-200 font-medium max-w-3xl mx-auto leading-relaxed">
+                Bring WeKonnects to your city. Become a Regional Director and build a highly profitable business by connecting local professionals.
+            </p>
+        </div>
+    </div>
+
+    <section class="py-20 bg-brandLightGray flex-grow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-16">
+                
+                <div class="lg:w-1/2" data-aos="fade-right">
+                    <h2 class="text-3xl font-bold text-brandOrange mb-6">The Franchise Opportunity</h2>
+                    <p class="text-lg text-brandBlue mb-8">
+                        Operating a WeKonnects franchise allows you to generate recurring revenue through membership dues while positioning yourself as the most connected business leader in your region.
+                    </p>
+                </div>
+
+                <div class="lg:w-1/2 bg-brandWhite p-10 rounded-3xl shadow-2xl border border-gray-100" data-aos="fade-left">
+                    <h3 class="text-2xl font-bold text-brandOrange mb-6">Request Franchise Information</h3>
+                    
+                    <form action="send_mail.php" method="POST" class="space-y-6">
+                        <input type="hidden" name="category" value="Franchise Inquiry">
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-brandBlue mb-2">Full Name *</label>
+                            <input type="text" name="name" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:border-brandOrange focus:outline-none transition">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-bold text-brandBlue mb-2">Email *</label>
+                                <input type="email" name="email" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:border-brandOrange outline-none transition">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-brandBlue mb-2">Phone *</label>
+                                <input type="tel" name="phone" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:border-brandOrange outline-none transition">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-brandBlue mb-2">City *</label>
+                            <input type="text" name="city" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:border-brandOrange outline-none transition">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-brandBlue mb-2">Any additional details?</label>
+                            <input type="text" name="message" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:border-brandOrange outline-none transition">
+                        </div>
+
+                        <button type="submit" class="w-full bg-brandOrange text-brandWhite font-bold text-lg py-4 rounded-xl hover:bg-orange-600 transition shadow-lg mt-4">
+                            Submit Inquiry
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+   <div id="footer-placeholder"></div>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script> 
+        AOS.init({ once: true }); 
+        
+        // The "?v=1" forces the browser to pull the newest version, bypassing the cache
+        fetch('header.html?v=1')
+            .then(r => r.text())
+            .then(d => document.getElementById('header-placeholder').innerHTML = d)
+            .catch(e => console.error("Header failed to load: ", e));
+            
+        fetch('footer.html?v=1')
+            .then(r => r.text())
+            .then(d => document.getElementById('footer-placeholder').innerHTML = d);
+    </script>
+</body>
+</html>

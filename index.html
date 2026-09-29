@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeKonnects | Premium Business Networking</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] }, colors: { brandOrange: '#FF6B00', brandBlue: '#0F2046', brandWhite: '#FFFFFF', brandLightGray: '#F8F9FA' } } } }
+    </script>
+
+    <style>
+        #preloader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #FFFFFF; z-index: 9999; display: flex; justify-content: center; align-items: center; transition: opacity 0.6s ease-out; }
+        .pulse-logo { animation: pulse-bold 1.5s infinite; filter: drop-shadow(0px 10px 15px rgba(255, 107, 0, 0.3)); }
+        @keyframes pulse-bold { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
+        .swiper-pagination-bullet-active { background-color: #FF6B00 !important; }
+    </style>
+</head>
+<body class="bg-brandWhite text-brandBlue font-sans antialiased overflow-x-hidden flex flex-col min-h-screen">
+
+    <div id="preloader"><img src="https://wekonnects.com/logo.png" alt="Loading..." class="h-24 md:h-32 w-auto pulse-logo"></div>
+
+    <div id="header-placeholder"></div>
+
+    <!-- HERO IMAGE SLIDER -->
+    <div class="relative pt-24 h-screen min-h-[600px] flex content-center items-center justify-center w-full">
+        <div class="swiper myHeroSwiper absolute top-0 left-0 w-full h-full z-0">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1542744173-8e7e53415bb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');"></div>
+                <div class="swiper-slide bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');"></div>
+                <div class="swiper-slide bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1515169067868-5387ec356754?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');"></div>
+            </div>
+            <div class="swiper-pagination"></div>
+        </div>
+        <div class="absolute top-0 left-0 w-full h-full bg-brandBlue/80 mix-blend-multiply z-10"></div>
+        <div class="container relative mx-auto px-6 z-20 text-center" data-aos="zoom-in" data-aos-duration="1000">
+            <h1 class="text-5xl md:text-7xl font-extrabold text-brandWhite leading-tight mb-6 drop-shadow-lg">
+                Transform Your <span class="text-brandOrange">Business Network.</span>
+            </h1>
+            <p class="mt-4 text-xl md:text-2xl text-blue-100 font-medium max-w-3xl mx-auto mb-10 leading-relaxed">
+                Join an elite community of professionals. Generate highly qualified referrals, lock out your competition, and scale your revenue.
+            </p>
+        </div>
+    </div>
+
+    <!-- DYNAMIC CITY SEARCH BAR -->
+    <div class="relative z-30 -mt-16 max-w-4xl mx-auto px-4 sm:px-6 w-full">
+        <div class="bg-brandWhite p-4 md:p-6 rounded-3xl shadow-2xl flex flex-col md:flex-row gap-4 border border-gray-100">
+            <select id="citySearchSelect" class="w-full md:flex-grow px-4 py-4 bg-gray-50 border border-gray-200 rounded-xl focus:border-brandOrange focus:outline-none text-brandBlue font-bold text-lg cursor-pointer">
+                <option value="">Loading active cities...</option>
+            </select>
+            <button onclick="triggerMeetingSearch()" class="w-full md:w-auto bg-brandOrange text-brandWhite font-extrabold text-lg px-10 py-4 rounded-xl hover:bg-orange-600 transition shadow-[0_10px_20px_rgba(255,107,0,0.3)] whitespace-nowrap transform hover:-translate-y-1">
+                Find Meetings
+            </button>
+        </div>
+    </div>
+
+    <!-- DYNAMIC MEETING RESULTS -->
+    <section id="meetingResultsContainer" class="hidden py-16 bg-brandLightGray border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <h3 class="text-3xl font-extrabold text-brandBlue mb-2">Upcoming Meetings in <span id="displaySearchedCity" class="text-brandOrange underline">City</span></h3>
+                <p class="text-gray-600 font-medium text-lg">Select a chapter below and register as a visitor to secure your seat.</p>
+            </div>
+            <div id="meetingCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        </div>
+    </section>
+
+    <!-- VISITOR REGISTRATION MODAL -->
+    <div id="visitorModal" class="hidden fixed inset-0 z-[100] flex justify-center items-center px-4 bg-brandBlue/90 backdrop-blur-sm transition-opacity">
+        <div class="bg-brandWhite rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-transform scale-95" id="modalContent">
+            <div class="p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-brandOrange">Visit <span id="modalChapterName">Chapter</span></h2>
+                    <button onclick="closeVisitorModal()" class="text-gray-400 hover:text-red-500 transition"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                </div>
+                <p class="text-sm text-gray-600 mb-6 font-medium">Please provide your details. Your request will be sent to the chapter's Head Table.</p>
+                <form action="send_visitor.php" method="POST" class="space-y-4">
+                    <input type="hidden" id="hiddenChapterInput" name="chapter_id">
+                    <div><label class="block text-sm font-bold text-brandBlue mb-1">Full Name *</label><input type="text" name="visitor_name" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-brandOrange outline-none"></div>
+                    <div><label class="block text-sm font-bold text-brandBlue mb-1">Company Name *</label><input type="text" name="company_name" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-brandOrange outline-none"></div>
+                    <div><label class="block text-sm font-bold text-brandBlue mb-1">Phone Number *</label><input type="tel" name="phone" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-brandOrange outline-none"></div>
+                    <button type="submit" class="w-full bg-brandBlue text-brandWhite font-bold text-lg py-4 rounded-xl hover:bg-blue-900 transition mt-4 shadow-md">Submit Visitor Request</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- DYNAMIC IMPACT METRICS -->
+    <section class="py-16 bg-brandOrange text-brandWhite relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                <div data-aos="fade-up" data-aos-delay="0">
+                    <div id="metric-members" class="text-4xl md:text-5xl font-extrabold mb-2">--</div>
+                    <div class="text-sm md:text-base font-semibold text-orange-200 uppercase tracking-wide">Active Members</div>
+                </div>
+                <div data-aos="fade-up" data-aos-delay="100">
+                    <div id="metric-closed" class="text-4xl md:text-5xl font-extrabold mb-2">--</div>
+                    <div class="text-sm md:text-base font-semibold text-orange-200 uppercase tracking-wide">Closed Business</div>
+                </div>
+                <div data-aos="fade-up" data-aos-delay="200">
+                    <div id="metric-ongoing" class="text-4xl md:text-5xl font-extrabold mb-2">--</div>
+                    <div class="text-sm md:text-base font-semibold text-orange-200 uppercase tracking-wide">Ongoing Business</div>
+                </div>
+                <div data-aos="fade-up" data-aos-delay="300">
+                    <div id="metric-visitors" class="text-4xl md:text-5xl font-extrabold mb-2">--</div>
+                    <div class="text-sm md:text-base font-semibold text-orange-200 uppercase tracking-wide">Total Visitors</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WHO WE ARE & TESTIMONIALS -->
+    <section class="py-20 bg-brandWhite">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-20">
+                <div data-aos="fade-up">
+                    <h2 class="text-sm font-extrabold tracking-widest text-gray-400 uppercase mb-2">Who We Are</h2>
+                    <h3 class="text-4xl font-bold text-brandOrange mb-6">Networking Reimagined.</h3>
+                    <p class="text-lg text-brandBlue mb-4 leading-relaxed">
+                        WeKonnects is more than just a casual meetup. We are a premier referral marketing organization dedicated to helping local business owners scale their companies through structured, accountable, and exclusive networking.
+                    </p>
+                    <p class="text-lg text-brandBlue mb-6 leading-relaxed">
+                        By securing your exclusive professional category, you ensure that none of your competitors can join your chapter. Our system tracks every referral and closed business transaction, guaranteeing a return on investment for our active members.
+                    </p>
+                    <a href="about.html" class="text-brandOrange font-bold hover:text-orange-700 transition flex items-center">Read Our Full Story <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg></a>
+                </div>
+                <div data-aos="zoom-in" data-aos-delay="100">
+                    <!-- FIXED IMAGE LINK -->
+                    <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=800&q=80" alt="WeKonnects Meeting" class="rounded-2xl shadow-2xl border-4 border-brandLightGray">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 bg-brandLightGray">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h3 class="text-4xl font-bold text-brandOrange mb-4">Real Members, Real ROI</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-brandWhite p-8 rounded-3xl shadow-md border border-gray-100" data-aos="fade-up"><p class="text-gray-600 italic mb-6">"Joining WeKonnects resulted in 5 new major clients in my first 6 months. It's the best marketing investment I've made."</p><h4 class="font-bold text-brandBlue">Abhilash A.</h4></div>
+                <div class="bg-brandWhite p-8 rounded-3xl shadow-md border border-gray-100" data-aos="fade-up" data-aos-delay="100"><p class="text-gray-600 italic mb-6">"Before this, I was cold calling. Now, I have a team actively looking for referrals for my business every single week."</p><h4 class="font-bold text-brandBlue">Kiran Kumar</h4></div>
+                <div class="bg-brandWhite p-8 rounded-3xl shadow-md border border-gray-100" data-aos="fade-up" data-aos-delay="200"><p class="text-gray-600 italic mb-6">"Once I secured the accounting seat, none of my competitors could join. It's a guaranteed lead generation machine."</p><h4 class="font-bold text-brandBlue">Priya R.</h4></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEW: EVENT POSTERS & GALLERY SLIDER -->
+    <section class="py-20 bg-brandWhite border-t border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12" data-aos="fade-up">
+                <h2 class="text-3xl font-extrabold text-brandOrange mb-4">Event Posters & Gallery</h2>
+                <p class="text-lg text-brandBlue font-medium">Catch a glimpse of our recent meetings, regional events, and upcoming announcements.</p>
+            </div>
+            
+            <!-- Gallery Swiper Container -->
+            <div class="swiper gallerySwiper pb-12 px-2" data-aos="fade-up" data-aos-delay="100">
+                <div class="swiper-wrapper">
+                    <!-- Static Placeholders (Replace with dynamic PHP links from BMS later) -->
+                    <div class="swiper-slide">
+                        <img src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&q=80" class="rounded-3xl shadow-lg border-2 border-gray-100 object-cover h-80 w-full" alt="Gallery Event 1">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://images.unsplash.com/photo-1505373877841-8d25f7d46678?auto=format&fit=crop&w=600&q=80" class="rounded-3xl shadow-lg border-2 border-gray-100 object-cover h-80 w-full" alt="Gallery Event 2">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=600&q=80" class="rounded-3xl shadow-lg border-2 border-gray-100 object-cover h-80 w-full" alt="Gallery Event 3">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=600&q=80" class="rounded-3xl shadow-lg border-2 border-gray-100 object-cover h-80 w-full" alt="Gallery Event 4">
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HEAD OFFICE MAP -->
+    <section class="py-20 bg-brandLightGray">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10" data-aos="fade-up">
+                <h2 class="text-3xl font-extrabold text-brandOrange mb-4">Our Head Office</h2>
+                <p class="text-lg text-brandBlue font-medium">Have questions? Visit us at the WeKonnects headquarters.</p>
+            </div>
+            <div class="bg-brandWhite rounded-3xl overflow-hidden shadow-lg h-[400px] border-4 border-white relative" data-aos="zoom-in">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d122394.88796847426!2d80.55106191832049!3d16.510196238682055!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a35eff9482d944b%3A0x939b7e84ab4a0265!2sVijayawada%2C%20Andhra%20Pradesh!5e0!3m2!1sen!2sin!4v1714000000000!5m2!1sen!2sin" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER PLACEHOLDER -->
+    <div id="footer-placeholder"></div>
+
+    <!-- SCRIPTS -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script>
+        AOS.init({ once: true, offset: 50 });
+        window.addEventListener('load', function() { setTimeout(() => { document.getElementById('preloader').style.opacity = '0'; setTimeout(() => { document.getElementById('preloader').style.display = 'none'; }, 600); }, 800); });
+
+        // Hero Slider
+        var heroSwiper = new Swiper(".myHeroSwiper", { loop: true, effect: "fade", autoplay: { delay: 4000, disableOnInteraction: false }, pagination: { el: ".swiper-pagination", clickable: true } });
+        
+        // Gallery Slider
+        var gallerySwiper = new Swiper(".gallerySwiper", {
+            slidesPerView: 1, spaceBetween: 30, loop: true, autoplay: { delay: 3000, disableOnInteraction: false },
+            pagination: { el: ".gallerySwiper .swiper-pagination", clickable: true },
+            breakpoints: { 640: { slidesPerView: 2 }, 1024: { slidesPerView: 3 } }
+        });
+
+        // Header/Footer Fetch
+        fetch('header.html?v=5').then(r => r.text()).then(d => document.getElementById('header-placeholder').innerHTML = d);
+        fetch('footer.html?v=5').then(r => r.text()).then(d => document.getElementById('footer-placeholder').innerHTML = d);
+
+        // --- DATABASE API LOGIC ---
+        function formatIndianCurrency(num) {
+            num = Number(num);
+            if (isNaN(num) || num === 0) return "0";
+            if (num >= 10000000) return "₹" + (num / 10000000).toFixed(1) + "Cr+";
+            if (num >= 100000) return "₹" + (num / 100000).toFixed(1) + "L+";
+            return "₹" + num.toLocaleString('en-IN');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('api_engine.php?action=get_impact_metrics')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('metric-members').innerText = data.members + "+";
+                    document.getElementById('metric-closed').innerText = formatIndianCurrency(data.closed);
+                    document.getElementById('metric-ongoing').innerText = formatIndianCurrency(data.ongoing);
+                    document.getElementById('metric-visitors').innerText = data.visitors + "+";
+                }).catch(err => console.log("Database connection error: ", err));
+
+            fetch('api_engine.php?action=get_cities')
+                .then(res => res.json())
+                .then(cities => {
+                    const select = document.getElementById('citySearchSelect');
+                    select.innerHTML = '<option value="">Select your city to find a meeting...</option>';
+                    cities.forEach(city => { select.innerHTML += `<option value="${city}">${city}</option>`; });
+                }).catch(err => console.log("Database connection error: ", err));
+        });
+
+        function triggerMeetingSearch() {
+            const selectedCity = document.getElementById('citySearchSelect').value;
+            if(!selectedCity) { alert("Please select a city first!"); return; }
+
+            document.getElementById('meetingResultsContainer').classList.remove('hidden');
+            document.getElementById('displaySearchedCity').innerText = selectedCity;
+            const grid = document.getElementById('meetingCardsGrid');
+            grid.innerHTML = '<p class="text-brandBlue font-bold col-span-3 text-center py-10">Fetching live meetings from database...</p>';
+
+            fetch(`api_engine.php?action=search_meetings&city=${selectedCity}`)
+                .then(res => res.json())
+                .then(meetings => {
+                    grid.innerHTML = '';
+                    if(meetings.length === 0) {
+                        grid.innerHTML = `
+                            <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center py-10 bg-brandWhite rounded-3xl shadow-sm border border-gray-100">
+                                <div class="text-4xl mb-4">📍</div>
+                                <h3 class="text-2xl font-bold text-brandBlue mb-2">No active chapters in ${selectedCity} yet!</h3>
+                                <p class="text-gray-500 font-medium text-lg max-w-2xl mx-auto">We are currently expanding! Check back soon or <a href="contact.html" class="text-brandOrange underline">contact us</a> to start a new chapter.</p>
+                            </div>
+                        `;
+                    } else {
+                        meetings.forEach(meeting => {
+                            grid.innerHTML += `
+                                <div class="bg-brandWhite rounded-2xl p-6 shadow-md border-t-4 border-brandOrange hover:shadow-xl transition duration-300 flex flex-col">
+                                    <div class="flex-grow mb-4">
+                                        <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full mb-3 inline-block">Accepting Visitors</span>
+                                        <h2 class="text-2xl font-bold text-brandBlue mb-4">${escapeHtml(meeting.name)}</h2>
+                                        <div class="space-y-2 text-sm font-medium text-gray-600">
+                                            <div class="flex items-center"><span class="text-xl mr-2">📅</span> ${escapeHtml(meeting.time)}</div>
+                                            <div class="flex items-center"><span class="text-xl mr-2">📍</span> ${escapeHtml(meeting.location)}</div>
+                                            <div class="flex items-center"><span class="text-xl mr-2">👥</span> ${meeting.members} Active Members</div>
+                                        </div>
+                                    </div>
+                                    <button data-chapter-id="${Number(meeting.id)}" data-chapter-name="${escapeHtml(meeting.name)}" onclick="openVisitorModal(this.dataset.chapterName, this.dataset.chapterId)" class="w-full bg-brandOrange text-brandWhite text-center font-bold px-6 py-3 rounded-xl hover:bg-orange-600 transition shadow-md mt-auto">
+                                        Visit as Visitor
+                                    </button>
+                                </div>
+                            `;
+                        });
+                    }
+                    document.getElementById('meetingResultsContainer').scrollIntoView({ behavior: 'smooth' });
+                }).catch(err => {
+                    grid.innerHTML = `<p class="text-red-500 font-bold col-span-3 text-center py-10">Error loading data. Please check your database connection.</p>`;
+                });
+        }
+
+        // --- VISITOR MODAL LOGIC ---
+        const modal = document.getElementById('visitorModal');
+        const modalContent = document.getElementById('modalContent');
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+        }
+        function openVisitorModal(chapterName, chapterId) {
+            document.getElementById('modalChapterName').innerText = chapterName;
+            document.getElementById('hiddenChapterInput').value = chapterId;
+            modal.classList.remove('hidden');
+            setTimeout(() => modalContent.classList.remove('scale-95'), 10);
+        }
+        function closeVisitorModal() {
+            modalContent.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+    </script>
+</body>
+</html>

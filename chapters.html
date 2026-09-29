@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find a Chapter | WeKonnects</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] }, colors: { brandOrange: '#FF6B00', brandBlue: '#0F2046', brandWhite: '#FFFFFF', brandLightGray: '#F8F9FA' } } } }
+    </script>
+</head>
+<body class="bg-brandWhite text-brandBlue font-sans antialiased flex flex-col min-h-screen">
+
+    <div id="header-placeholder"></div>
+
+    <div class="relative pt-36 pb-24 bg-brandBlue mt-10 border-b-8 border-brandOrange">
+        <div class="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1556761175-5973dc0f32f7?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10" data-aos="zoom-in">
+            <h1 class="text-5xl md:text-6xl font-extrabold text-brandWhite mb-6">Discover Local <span class="text-brandOrange">Chapters</span>.</h1>
+            <p class="text-xl text-blue-200 font-medium max-w-3xl mx-auto leading-relaxed">
+                WeKonnects is rapidly expanding. Find an active chapter in your city, check the meeting time, and secure your VIP guest pass.
+            </p>
+        </div>
+    </div>
+
+    <div class="relative z-20 -mt-10 max-w-3xl mx-auto px-4 sm:px-6 w-full" data-aos="fade-up">
+        <div class="bg-brandWhite p-4 rounded-3xl md:rounded-full shadow-xl flex flex-col md:flex-row gap-4 md:gap-2 border border-gray-100">
+            <input type="text" id="chapterSearchInput" placeholder="Enter City (e.g., Vijayawada)..." class="w-full md:flex-grow px-4 md:px-6 py-3 bg-transparent text-base md:text-lg focus:outline-none text-brandBlue font-medium">
+            <button onclick="searchChapters()" class="w-full md:w-auto bg-brandOrange text-brandWhite font-extrabold px-8 py-3 rounded-full hover:bg-orange-600 transition shadow-md whitespace-nowrap transform hover:-translate-y-0.5">
+                Search Database
+            </button>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-16 mb-8">
+        <div class="bg-gradient-to-br from-brandBlue to-blue-900 rounded-3xl p-8 md:p-12 shadow-2xl text-center text-brandWhite relative overflow-hidden" data-aos="fade-up">
+            <div class="absolute -right-20 -top-20 w-64 h-64 bg-brandOrange rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+            <div class="absolute -left-20 -bottom-20 w-64 h-64 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+            
+            <div class="relative z-10">
+                <span class="bg-brandOrange text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-widest mb-6 inline-block shadow-sm">Special Event</span>
+                <h2 class="text-3xl md:text-5xl font-extrabold mb-4">Mega Visitor Day</h2>
+                <p class="text-lg font-medium mb-8 text-blue-200 max-w-2xl mx-auto">Experience the power of 50+ local business owners networking in one room. Secure your VIP guest pass today to see how WeKonnects operates.</p>
+                <a href="contact.html" class="inline-block bg-brandOrange text-brandWhite font-extrabold text-lg px-10 py-4 rounded-full hover:bg-orange-600 transition shadow-[0_10px_20px_rgba(255,107,0,0.3)] transform hover:-translate-y-1">Claim Your Free Guest Pass</a>
+            </div>
+        </div>
+    </div>
+
+    <section class="py-12 bg-brandWhite flex-grow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-end mb-8 border-b border-gray-100 pb-4">
+                <h2 class="text-3xl font-bold text-brandBlue">Active Chapters</h2>
+            </div>
+            
+            <div id="loadingIndicator" class="text-center py-10">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-brandOrange mx-auto"></div>
+                <p class="mt-4 text-brandBlue font-bold">Fetching live chapters from database...</p>
+            </div>
+
+            <div id="chaptersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 hidden">
+                </div>
+        </div>
+    </section>
+
+    <div id="visitorModal" class="hidden fixed inset-0 z-[100] flex justify-center items-center px-4 bg-brandBlue/90 backdrop-blur-sm transition-opacity">
+        <div class="bg-brandWhite rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-transform scale-95" id="modalContent">
+            <div class="p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-brandOrange">Visit <span id="modalChapterName">Chapter</span></h2>
+                    <button onclick="closeVisitorModal()" class="text-gray-400 hover:text-red-500 transition"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                </div>
+                <p class="text-sm text-gray-600 mb-6 font-medium">Please provide your details. Your request will be sent to the chapter's Head Table.</p>
+                
+                <form action="send_visitor.php" method="POST" class="space-y-4">
+                    <input type="hidden" id="hiddenChapterInput" name="chapter_id">
+                    <div>
+                        <label class="block text-sm font-bold text-brandBlue mb-1">Full Name *</label>
+                        <input type="text" name="visitor_name" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-brandOrange outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-brandBlue mb-1">Company Name *</label>
+                        <input type="text" name="company_name" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-brandOrange outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-brandBlue mb-1">Phone Number *</label>
+                        <input type="tel" name="phone" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-brandOrange outline-none">
+                    </div>
+                    <button type="submit" class="w-full bg-brandBlue text-brandWhite font-bold text-lg py-4 rounded-xl hover:bg-blue-900 transition mt-4 shadow-md">Submit Visitor Request</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script> 
+        AOS.init({ once: true }); 
+        fetch('header.html?v=8').then(r => r.text()).then(d => document.getElementById('header-placeholder').innerHTML = d);
+        fetch('footer.html?v=8').then(r => r.text()).then(d => document.getElementById('footer-placeholder').innerHTML = d);
+
+        // --- DATABASE API CONNECTION ---
+        
+        // Fetch all chapters on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchChapters(''); 
+        });
+
+        // Triggered when user clicks "Search Database"
+        function searchChapters() {
+            const query = document.getElementById('chapterSearchInput').value;
+            fetchChapters(query);
+        }
+
+        // The core function to pull data from api_engine.php
+        function fetchChapters(searchQuery) {
+            const grid = document.getElementById('chaptersGrid');
+            const loader = document.getElementById('loadingIndicator');
+            
+            grid.innerHTML = '';
+            grid.classList.add('hidden');
+            loader.classList.remove('hidden');
+
+            fetch(`api_engine.php?action=search_meetings&city=${encodeURIComponent(searchQuery)}`)
+                .then(res => res.json())
+                .then(meetings => {
+                    loader.classList.add('hidden');
+                    grid.classList.remove('hidden');
+
+                    if(meetings.error) {
+                        grid.innerHTML = `<div class="col-span-full text-center text-red-500 font-bold py-10">Database Error: ${meetings.error}</div>`;
+                        return;
+                    }
+
+                    if(meetings.length === 0) {
+                        grid.innerHTML = `
+                            <div class="col-span-full text-center py-10 bg-brandLightGray rounded-3xl shadow-sm border border-gray-100">
+                                <div class="text-5xl mb-4">📍</div>
+                                <h3 class="text-2xl font-bold text-brandBlue mb-2">No chapters found for "${escapeHtml(searchQuery)}".</h3>
+                                <p class="text-gray-500 font-medium text-lg max-w-2xl mx-auto">We are currently expanding! Check back soon or <a href="contact.html" class="text-brandOrange underline">contact us</a> to start a new chapter here.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    // Generate cards for every chapter
+                    meetings.forEach((meeting, index) => {
+                        grid.innerHTML += `
+                            <div class="bg-brandWhite rounded-3xl p-8 shadow-md border-t-4 border-brandOrange hover:shadow-xl transition duration-300 flex flex-col" data-aos="fade-up" data-aos-delay="${(index % 3) * 100}">
+                                <div class="flex-grow mb-6">
+                                    <span class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1.5 rounded-full mb-4 inline-block shadow-sm">Accepting Visitors</span>
+                                    <h2 class="text-2xl font-extrabold text-brandBlue mb-4">${escapeHtml(meeting.name)}</h2>
+                                    <div class="space-y-3 text-sm font-medium text-gray-600">
+                                        <div class="flex items-center"><span class="text-xl mr-3">📅</span> ${escapeHtml(meeting.time)}</div>
+                                        <div class="flex items-center"><span class="text-xl mr-3">📍</span> ${escapeHtml(meeting.location)}</div>
+                                        <div class="flex items-center"><span class="text-xl mr-3">👥</span> ${meeting.members} Active Members</div>
+                                    </div>
+                                </div>
+                                <button data-chapter-id="${Number(meeting.id)}" data-chapter-name="${escapeHtml(meeting.name)}" onclick="openVisitorModal(this.dataset.chapterName, this.dataset.chapterId)" class="w-full bg-brandOrange text-brandWhite text-center font-bold px-6 py-4 rounded-xl hover:bg-orange-600 transition shadow-md mt-auto">
+                                    Visit this Chapter
+                                </button>
+                            </div>
+                        `;
+                    });
+                }).catch(err => {
+                    loader.classList.add('hidden');
+                    grid.classList.remove('hidden');
+                    grid.innerHTML = `<div class="col-span-full text-center text-red-500 font-bold py-10">Failed to connect to the database. Make sure api_engine.php is active.</div>`;
+                });
+        }
+
+        // --- VISITOR MODAL LOGIC ---
+        const modal = document.getElementById('visitorModal');
+        const modalContent = document.getElementById('modalContent');
+
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+        }
+
+        function openVisitorModal(chapterName, chapterId) {
+            document.getElementById('modalChapterName').innerText = chapterName;
+            document.getElementById('hiddenChapterInput').value = chapterId;
+            modal.classList.remove('hidden');
+            setTimeout(() => modalContent.classList.remove('scale-95'), 10);
+        }
+
+        function closeVisitorModal() {
+            modalContent.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+    </script>
+</body>
+</html>

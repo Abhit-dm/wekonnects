@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Directory | WeKonnects</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] }, colors: { brandOrange: '#FF6B00', brandBlue: '#0F2046', brandWhite: '#FFFFFF', brandLightGray: '#F8F9FA' } } } }
+    </script>
+</head>
+<body class="bg-brandLightGray text-brandBlue font-sans antialiased flex flex-col min-h-screen overflow-x-hidden">
+
+    <div id="header-placeholder"></div>
+
+    <div class="relative pt-36 pb-24 bg-brandBlue mt-10 border-b-8 border-brandOrange">
+        <div class="absolute inset-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center"></div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10" data-aos="zoom-in">
+            <h1 class="text-5xl md:text-6xl font-extrabold text-brandWhite mb-6">Global Member <span class="text-brandOrange">Directory</span>.</h1>
+            <p class="text-xl text-blue-200 font-medium max-w-3xl mx-auto leading-relaxed">
+                Connect with highly qualified professionals across the WeKonnects network. Find the exact services and partners you need to scale your business.
+            </p>
+        </div>
+    </div>
+
+    <section id="gatekeeperSection" class="py-16 relative z-20 -mt-16">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-brandWhite rounded-3xl shadow-2xl overflow-hidden border border-gray-100" data-aos="fade-up">
+                <div class="bg-gray-50 border-b border-gray-100 p-8 text-center">
+                    <div class="w-16 h-16 bg-brandOrange/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-brandOrange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-brandBlue mb-2">Secure Directory Access</h2>
+                    <p class="text-gray-600 font-medium">To protect our members from spam and data scraping, please verify your details to unlock the search portal.</p>
+                </div>
+                
+                <div class="p-8 md:p-10">
+                    <form id="unlockDirectoryForm" class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-bold text-brandBlue mb-2">Full Name *</label>
+                            <input type="text" id="accessName" required class="w-full px-5 py-4 bg-brandLightGray border border-gray-200 rounded-xl focus:border-brandOrange outline-none transition text-lg">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-bold text-brandBlue mb-2">Email Address *</label>
+                                <input type="email" id="accessEmail" required class="w-full px-5 py-4 bg-brandLightGray border border-gray-200 rounded-xl focus:border-brandOrange outline-none transition text-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-brandBlue mb-2">Phone Number *</label>
+                                <input type="tel" id="accessPhone" required class="w-full px-5 py-4 bg-brandLightGray border border-gray-200 rounded-xl focus:border-brandOrange outline-none transition text-lg">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-brandBlue mb-2">Why do you need access? *</label>
+                            <select id="accessReason" required class="w-full px-5 py-4 bg-brandLightGray border border-gray-200 rounded-xl focus:border-brandOrange outline-none transition text-lg cursor-pointer">
+                                <option value="">Select an option...</option>
+                                <option value="Looking for a specific service">Looking for a specific service</option>
+                                <option value="Interested in joining a chapter">Interested in joining a chapter</option>
+                                <option value="I am already a member">I am already an active member</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="w-full bg-brandOrange text-brandWhite font-extrabold text-xl py-5 rounded-xl hover:bg-orange-600 transition shadow-lg mt-4 flex justify-center items-center">
+                            <span id="btnText">Unlock Directory Now</span>
+                            <svg id="btnSpinner" class="animate-spin ml-3 h-6 w-6 text-white hidden" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="unlockedDirectory" class="hidden flex-grow flex flex-col transition-opacity duration-1000 opacity-0 relative z-20 -mt-16">
+        
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full mb-12">
+            <div class="bg-brandWhite p-6 rounded-3xl shadow-xl border border-gray-100">
+                <h3 class="text-brandBlue font-bold text-lg mb-4 border-b border-gray-100 pb-2">Advanced Search Filters</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                    
+                    <div class="lg:col-span-2">
+                        <input type="text" id="searchKeyword" placeholder="Search Name, Company, or Keyword..." class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-brandOrange outline-none text-sm font-medium">
+                    </div>
+                    
+                    <div>
+                        <select id="searchCity" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-brandOrange outline-none text-sm font-medium cursor-pointer">
+                            <option value="">All Cities</option>
+                            <option value="Vijayawada">Vijayawada</option>
+                            <option value="Amaravathi">Amaravathi</option>
+                            <option value="Guntur">Guntur</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <select id="searchChapter" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-brandOrange outline-none text-sm font-medium cursor-pointer">
+                            <option value="">All Chapters</option>
+                            <option value="Pinnacle">Pinnacle</option>
+                            <option value="Titans">Titans</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <select id="searchCategory" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:border-brandOrange outline-none text-sm font-medium cursor-pointer">
+                            <option value="">All Categories</option>
+                            <option value="Real Estate">Real Estate</option>
+                            <option value="IT Services">IT Services</option>
+                            <option value="Finance">Finance</option>
+                            <option value="Healthcare">Healthcare</option>
+                        </select>
+                    </div>
+
+                </div>
+                
+                <div class="mt-4 flex justify-end">
+                    <button onclick="executeDirectorySearch()" class="bg-brandBlue text-brandWhite font-bold px-8 py-3 rounded-xl hover:bg-blue-900 transition shadow-md flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        Search Members
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <main class="flex-grow pb-20 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto">
+                <div id="directoryLoader" class="text-center py-10 hidden">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-brandOrange mx-auto"></div>
+                    <p class="mt-4 text-brandBlue font-bold">Searching secure database...</p>
+                </div>
+
+                <div id="membersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script> 
+        AOS.init({ once: true }); 
+        fetch('header.html?v=9').then(r => r.text()).then(d => document.getElementById('header-placeholder').innerHTML = d);
+        fetch('footer.html?v=9').then(r => r.text()).then(d => document.getElementById('footer-placeholder').innerHTML = d);
+
+        // --- GATEKEEPER LOGIC ---
+        document.getElementById('unlockDirectoryForm').addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            
+            const btnText = document.getElementById('btnText');
+            const btnSpinner = document.getElementById('btnSpinner');
+            btnText.innerText = "Verifying & Unlocking...";
+            btnSpinner.classList.remove('hidden');
+
+            // Form Data to send to API
+            const formData = new FormData();
+            formData.append('name', document.getElementById('accessName').value);
+            formData.append('email', document.getElementById('accessEmail').value);
+            formData.append('phone', document.getElementById('accessPhone').value);
+            formData.append('reason', document.getElementById('accessReason').value);
+
+            // Send lead to backend
+            fetch('api_engine.php?action=save_directory_lead', {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+              .then(data => {
+                  // Unlock the Directory
+                  document.getElementById('gatekeeperSection').classList.add('hidden');
+                  const dir = document.getElementById('unlockedDirectory');
+                  dir.classList.remove('hidden');
+                  setTimeout(() => { dir.classList.remove('opacity-0'); }, 50);
+
+                  // Run initial search
+                  executeDirectorySearch();
+              }).catch(err => {
+                  alert("Error unlocking directory. Please check your connection.");
+                  btnText.innerText = "Unlock Directory Now";
+                  btnSpinner.classList.add('hidden');
+              });
+        });
+
+        // --- DIRECTORY SEARCH LOGIC (WITH STAR TIERS) ---
+        function executeDirectorySearch() {
+            const keyword = document.getElementById('searchKeyword').value;
+            const city = document.getElementById('searchCity').value;
+            const chapter = document.getElementById('searchChapter').value;
+            const category = document.getElementById('searchCategory').value;
+
+            const grid = document.getElementById('membersGrid');
+            const loader = document.getElementById('directoryLoader');
+            
+            grid.innerHTML = ''; 
+            loader.classList.remove('hidden'); 
+
+            // Build the URL with the search filters
+            const url = `api_engine.php?action=search_members&keyword=${encodeURIComponent(keyword)}&city=${encodeURIComponent(city)}&chapter=${encodeURIComponent(chapter)}&category=${encodeURIComponent(category)}`;
+
+            fetch(url)
+                .then(res => res.json())
+                .then(members => {
+                    loader.classList.add('hidden');
+                    
+                    if(members.error) {
+                        grid.innerHTML = `<div class="col-span-full text-center text-red-500 font-bold py-10">API Error: ${members.error}</div>`;
+                        return;
+                    }
+
+                    if(members.length === 0) {
+                        grid.innerHTML = `<div class="col-span-full text-center py-10 bg-brandWhite rounded-3xl shadow-sm"><h3 class="text-2xl font-bold text-brandBlue">No members found matching your exact criteria.</h3></div>`;
+                        return;
+                    }
+
+                    members.forEach((member, index) => {
+                        // Handle Profile Photos
+                        let photoUrl = member.photo;
+                        if(!photoUrl || photoUrl === 'default.png') {
+                            photoUrl = `https://ui-avatars.com/api/?name=${member.name.replace(' ', '+')}&background=0F2046&color=fff&size=150`;
+                        } else {
+                            photoUrl = `bms/assets/uploads/profiles/${photoUrl}`; 
+                        }
+
+                        // Inject the dynamically colored "Star Tier" badge
+                        grid.innerHTML += `
+                            <div class="bg-brandWhite rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition duration-300 border border-gray-100 flex flex-col relative" data-aos="fade-up" data-aos-delay="${(index % 4) * 50}">
+                                
+                                <div class="absolute top-4 right-4 ${member.tier_color} border text-xs font-extrabold px-3 py-1.5 rounded-full z-10">
+                                    ${member.tier_name}
+                                </div>
+
+                                <div class="p-6 text-center flex-grow pt-10">
+                                    <span class="bg-orange-100 text-brandOrange text-xs font-bold px-3 py-1 rounded-full mb-4 inline-block">${member.category}</span>
+                                    <img src="${photoUrl}" alt="${member.name}" class="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-gray-50 object-cover shadow-sm">
+                                    <h3 class="text-xl font-extrabold text-brandBlue">${member.name}</h3>
+                                    <p class="text-gray-500 font-bold text-sm mb-1">${member.company}</p>
+                                    <p class="text-brandBlue font-medium text-xs mb-4 flex justify-center items-center">
+                                        📍 ${member.chapter}, ${member.city}
+                                    </p>
+                                </div>
+                                <div class="grid grid-cols-2 border-t border-gray-100">
+                                    <a href="tel:${member.phone}" class="py-4 text-center text-brandBlue font-bold hover:bg-gray-50 transition border-r border-gray-100 flex justify-center items-center">
+                                        <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                        Call
+                                    </a>
+                                    <a href="https://wa.me/91${member.phone}" target="_blank" class="py-4 text-center text-green-600 font-bold hover:bg-green-50 transition flex justify-center items-center">
+                                        WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }).catch(err => {
+                    loader.classList.add('hidden');
+                    grid.innerHTML = `<div class="col-span-full text-center text-red-500 font-bold py-10">Error loading database. Make sure api_engine.php is active.</div>`;
+                });
+        }
+    </script>
+</body>
+</html>

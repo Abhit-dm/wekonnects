@@ -1,0 +1,93 @@
+/* assets/css/style.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary-orange: #ff6b00;
+    --primary-hover: #e65c00;
+    --dark-blue: #00204a;
+    --white: #ffffff;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    color: var(--white);
+    /* Rich ambient background to make the glass effect visible */
+    background: radial-gradient(circle at 10% 20%, rgb(0, 32, 74) 0%, rgb(0, 15, 35) 90%);
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Adding ambient floating color orbs in the background for a premium feel */
+body::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 400px;
+    height: 400px;
+    background: var(--primary-orange);
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.3;
+    z-index: -1;
+}
+
+/* The Core Glassmorphism Class */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 16px;
+}
+
+/* Standardized Glass Inputs */
+.glass-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: var(--white);
+    font-size: 15px;
+    font-family: 'Inter', sans-serif;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.glass-input:focus {
+    outline: none;
+    border-color: var(--primary-orange);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.glass-input::placeholder { color: rgba(255, 255, 255, 0.5); }
+
+/* Standardized Buttons */
+.btn-primary {
+    background: var(--primary-orange);
+    color: var(--white);
+    border: none;
+    padding: 14px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    box-shadow: 0 4px 15px rgba(255, 107, 0, 0.4);
+    transform: translateY(-2px);
+}
+
+.logo-img {
+    max-width: 180px;
+    margin-bottom: 20px;
+}

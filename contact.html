@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join a Chapter | WeKonnects</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] }, colors: { brandOrange: '#FF6B00', brandBlue: '#0F2046', brandWhite: '#FFFFFF', brandLightGray: '#F8F9FA' } } } }
+    </script>
+    <style>
+        .custom-input { border: 2px solid #E5E7EB; color: #0F2046; transition: all 0.3s ease; }
+        .custom-input:focus { border-color: #FF6B00; box-shadow: 0 0 0 4px rgba(255, 107, 0, 0.1); outline: none; }
+    </style>
+</head>
+<body class="bg-brandLightGray text-brandBlue font-sans antialiased flex flex-col min-h-screen">
+
+    <div id="header-placeholder"></div>
+
+    <main class="flex-grow pt-36 pb-24 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-5xl mx-auto" data-aos="zoom-in" data-aos-duration="800">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-extrabold text-brandOrange mb-4">Grow Your Network Today</h1>
+                <p class="text-xl text-brandBlue font-medium">Submit your details to secure your professional category in a local chapter.</p>
+            </div>
+
+            <div class="bg-brandWhite rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+                <div class="p-10 md:p-14">
+                    <h2 class="text-3xl font-bold text-brandOrange mb-8 border-b-2 border-gray-100 pb-4">Membership Inquiry Form</h2>
+                    
+                    <form action="send_mail.php" method="POST" class="space-y-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <label for="name" class="block text-sm font-bold text-brandBlue mb-2">Full Name *</label>
+                                <input type="text" id="name" name="name" required class="w-full px-5 py-4 bg-gray-50 rounded-xl custom-input text-lg">
+                            </div>
+                            <div>
+                                <label for="phone" class="block text-sm font-bold text-brandBlue mb-2">Phone Number *</label>
+                                <input type="tel" id="phone" name="phone" required class="w-full px-5 py-4 bg-gray-50 rounded-xl custom-input text-lg">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <label for="email" class="block text-sm font-bold text-brandBlue mb-2">Email Address *</label>
+                                <input type="email" id="email" name="email" required class="w-full px-5 py-4 bg-gray-50 rounded-xl custom-input text-lg">
+                            </div>
+                            <div>
+                                <label for="city" class="block text-sm font-bold text-brandBlue mb-2">City *</label>
+                                <input type="text" id="city" name="city" required class="w-full px-5 py-4 bg-gray-50 rounded-xl custom-input text-lg">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="category" class="block text-sm font-bold text-brandBlue mb-2">Business Category (e.g., Real Estate) *</label>
+                            <input type="text" id="category" name="category" required class="w-full px-5 py-4 bg-gray-50 rounded-xl custom-input text-lg">
+                        </div>
+
+                        <div>
+                            <label for="message" class="block text-sm font-bold text-brandBlue mb-2">Company Name & Description</label>
+                            <textarea id="message" name="message" rows="5" class="w-full px-5 py-4 bg-gray-50 rounded-xl custom-input text-lg resize-none"></textarea>
+                        </div>
+
+                        <div class="pt-4">
+                            <button type="submit" class="w-full bg-brandOrange text-brandWhite font-extrabold text-xl py-5 px-6 rounded-xl hover:bg-orange-600 transition duration-300 shadow-[0_10px_20px_rgba(255,107,0,0.3)] transform hover:-translate-y-1">
+                                Submit Application
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+ <div id="footer-placeholder"></div>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script> 
+        AOS.init({ once: true }); 
+        
+        // The "?v=1" forces the browser to pull the newest version, bypassing the cache
+        fetch('header.html?v=1')
+            .then(r => r.text())
+            .then(d => document.getElementById('header-placeholder').innerHTML = d)
+            .catch(e => console.error("Header failed to load: ", e));
+            
+        fetch('footer.html?v=1')
+            .then(r => r.text())
+            .then(d => document.getElementById('footer-placeholder').innerHTML = d);
+    </script>
+</body>
+</html>
