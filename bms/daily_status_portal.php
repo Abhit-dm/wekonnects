@@ -9,7 +9,7 @@ $user_id = $_SESSION['user_id'];
 
 try {
     // Verify they are the Attendance Coordinator or Head Table
-    $stmtVerify = $pdo->prepare("SELECT gm.group_id, g.group_name FROM group_members gm JOIN groups g ON gm.group_id = g.id WHERE gm.user_id = ? AND gm.leadership_role IN ('Attendance', 'Coordinator') AND gm.membership_status = 'Active'");
+    $stmtVerify = $pdo->prepare("SELECT gm.group_id, gm.leadership_role, g.group_name FROM group_members gm JOIN groups g ON gm.group_id = g.id WHERE gm.user_id = ? AND gm.leadership_role IN ('Attendance', 'Coordinator') AND gm.membership_status = 'Active'");
     $stmtVerify->execute([$user_id]);
     $coord = $stmtVerify->fetch();
 
@@ -17,6 +17,7 @@ try {
     
     $group_id = $coord['group_id'];
     $group_name = $coord['group_name'];
+    $back_link = ($coord['leadership_role'] === 'Coordinator') ? 'head_table.php' : 'attendance_dashboard.php';
 
     // Fetch members
     $stmtMembers = $pdo->prepare("
@@ -88,7 +89,7 @@ $bulk_start_date = $_GET['bulk_start'] ?? date('Y-m-d', strtotime('-14 days'));
 <body>
 
 <div class="portal-container">
-    <a href="attendance_dashboard.php" style="color: var(--text-muted); text-decoration: none; margin-bottom: 15px; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+    <a href="<?php echo htmlspecialchars($back_link); ?>" style="color: var(--text-muted); text-decoration: none; margin-bottom: 15px; display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
 
     <?php if (isset($_SESSION['success_msg'])): ?>
         <div class="alert-banner" style="background: #ecfdf5; color: #065f46; border-color: #a7f3d0;">

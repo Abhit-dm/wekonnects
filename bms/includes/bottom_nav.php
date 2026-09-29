@@ -3,18 +3,17 @@
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 <style>
-    /* ULTIMATE OVERRIDE: Mobile-Responsive Footer */
+    /* Keep member navigation aligned with the mobile app frame on every viewport. */
     .bottom-nav { 
         position: fixed !important; 
         bottom: 0 !important; 
-        left: 0 !important; 
-        
-        /* Force physical screen width, completely ignoring the webpage width */
-        width: 100vw !important; 
-        max-width: 100% !important; 
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: min(100vw, 640px) !important;
+        max-width: 640px !important;
         
         margin: 0 !important;
-        padding: 8px 0 calc(8px + env(safe-area-inset-bottom)) 0 !important; 
+        padding: 8px 8px calc(8px + env(safe-area-inset-bottom)) !important;
         
         display: flex !important; 
         flex-direction: row !important;
@@ -29,7 +28,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
         border-radius: 20px 20px 0 0 !important; 
         box-sizing: border-box !important; 
         
-        /* Prevent anything from escaping the bar */
         overflow-x: hidden !important; 
     }
     

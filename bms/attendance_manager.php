@@ -41,6 +41,8 @@ try {
     $meeting_visitors = [];
     $is_already_logged = false;
     $is_locked = false;
+    $is_future_meeting = false;
+    $is_read_only = false;
     $current_mtg_date = '';
 
     if ($active_meeting_id) {
@@ -50,12 +52,14 @@ try {
         if (!$current_mtg_date) {
             die("Meeting not found for this chapter.");
         }
+        $is_future_meeting = $current_mtg_date > date('Y-m-d');
 
         $stmtLock = $pdo->prepare("SELECT COUNT(*) FROM chapter_meetings WHERE group_id = ? AND meeting_type <> 'Daily Status' AND meeting_date > ? AND status = 'Completed'");
         $stmtLock->execute([$group_id, $current_mtg_date]);
         if ($stmtLock->fetchColumn() > 0) {
             $is_locked = true;
         }
+        $is_read_only = $is_locked || $is_future_meeting;
 
         $stmtMembers = $pdo->prepare("
             SELECT u.id as user_id, u.first_name, u.last_name, b.company_name 
@@ -198,6 +202,14 @@ try {
                     A newer meeting has been completed. This past attendance record is permanently locked and cannot be altered.
                 </div>
             </div>
+        <?php elseif ($is_future_meeting): ?>
+            <div class="alert-banner alert-warning">
+                <i class="fa-regular fa-clock" style="font-size: 20px; margin-top: 2px;"></i>
+                <div>
+                    <strong style="display:block; margin-bottom:4px; font-size:14px;">Attendance Not Open Yet</strong>
+                    Attendance opens on the scheduled day, <?php echo date('M j, Y', strtotime($current_mtg_date)); ?>.
+                </div>
+            </div>
         <?php elseif ($is_already_logged): ?>
             <div class="alert-banner alert-warning">
                 <i class="fa-solid fa-triangle-exclamation" style="font-size: 20px; margin-top: 2px;"></i>
@@ -208,7 +220,7 @@ try {
             </div>
         <?php endif; ?>
 
-        <form action="actions/save_attendance.php" method="POST" class="<?php if($is_locked) echo 'locked-mode'; ?>">
+        <form action="actions/save_attendance.php" method="POST" class="<?php if($is_read_only) echo 'locked-mode'; ?>">
             <input type="hidden" name="meeting_id" value="<?php echo $active_meeting_id; ?>">
             
             <?php foreach ($members as $m): 
@@ -229,39 +241,39 @@ try {
                     </div>
                     
                     <div class="attendance-actions">
-                        <input type="radio" name="attendance[<?php echo $uid; ?>]" id="p_<?php echo $uid; ?>" value="Present" class="status-radio" <?php if($status=='Present') echo 'checked'; ?> onclick="toggleSub(<?php echo $uid; ?>, false)" <?php if($is_locked) echo 'disabled'; ?>>
+                        <input type="radio" name="attendance[<?php echo $uid; ?>]" id="p_<?php echo $uid; ?>" value="Present" class="status-radio" <?php if($status=='Present') echo 'checked'; ?> onclick="toggleSub(<?php echo $uid; ?>, false)" <?php if($is_read_only) echo 'disabled'; ?>>
                         <label for="p_<?php echo $uid; ?>" class="status-label present"><i class="fa-solid fa-check"></i> Present</label>
                         
-                        <input type="radio" name="attendance[<?php echo $uid; ?>]" id="a_<?php echo $uid; ?>" value="Absent" class="status-radio" <?php if($status=='Absent') echo 'checked'; ?> onclick="toggleSub(<?php echo $uid; ?>, false)" <?php if($is_locked) echo 'disabled'; ?>>
+                        <input type="radio" name="attendance[<?php echo $uid; ?>]" id="a_<?php echo $uid; ?>" value="Absent" class="status-radio" <?php if($status=='Absent') echo 'checked'; ?> onclick="toggleSub(<?php echo $uid; ?>, false)" <?php if($is_read_only) echo 'disabled'; ?>>
                         <label for="a_<?php echo $uid; ?>" class="status-label absent"><i class="fa-solid fa-xmark"></i> Absent</label>
                         
-                        <input type="radio" name="attendance[<?php echo $uid; ?>]" id="l_<?php echo $uid; ?>" value="Late" class="status-radio" <?php if($status=='Late') echo 'checked'; ?> onclick="toggleSub(<?php echo $uid; ?>, false)" <?php if($is_locked) echo 'disabled'; ?>>
+                        <input type="radio" name="attendance[<?php echo $uid; ?>]" id="l_<?php echo $uid; ?>" value="Late" class="status-radio" <?php if($status=='Late') echo 'checked'; ?> onclick="toggleSub(<?php echo $uid; ?>, false)" <?php if($is_read_only) echo 'disabled'; ?>>
                         <label for="l_<?php echo $uid; ?>" class="status-label late"><i class="fa-regular fa-clock"></i> Late</label>
                         
-                        <input type="radio" name="attendance[<?php echo $uid; ?>]" id="s_<?php echo $uid; ?>" value="Substitute" class="status-radio" <?php if($status=='Substitute') echo 'checked'; ?> onclick="toggleSub(<?php echo $uid; ?>, true)" <?php if($is_locked) echo 'disabled'; ?>>
+                        <input type="radio" name="attendance[<?php echo $uid; ?>]" id="s_<?php echo $uid; ?>" value="Substitute" class="status-radio" <?php if($status=='Substitute') echo 'checked'; ?> onclick="toggleSub(<?php echo $uid; ?>, true)" <?php if($is_read_only) echo 'disabled'; ?>>
                         <label for="s_<?php echo $uid; ?>" class="status-label substitute"><i class="fa-solid fa-user-astronaut"></i> Sub</label>
                     </div>
 
-                    <input type="text" name="substitute_name[<?php echo $uid; ?>]" id="sub_input_<?php echo $uid; ?>" class="sub-input" placeholder="Substitute's Full Name" value="<?php echo htmlspecialchars($sub_name); ?>" style="<?php echo ($status=='Substitute') ? 'display:block;' : ''; ?>" <?php if($is_locked) echo 'readonly'; ?>>
+                    <input type="text" name="substitute_name[<?php echo $uid; ?>]" id="sub_input_<?php echo $uid; ?>" class="sub-input" placeholder="Substitute's Full Name" value="<?php echo htmlspecialchars($sub_name); ?>" style="<?php echo ($status=='Substitute') ? 'display:block;' : ''; ?>" <?php if($is_read_only) echo 'readonly'; ?>>
 
                     <span class="points-label">Assign Performance Points</span>
                     <div class="points-grid">
-                        <label class="point-checkbox"><input type="checkbox" name="awards[<?php echo $uid; ?>][early_bird]" value="1" <?php if(!empty($att['early_bird'])) echo 'checked'; ?> <?php if($is_locked) echo 'disabled'; ?>> Early Bird</label>
-                        <label class="point-checkbox"><input type="checkbox" name="awards[<?php echo $uid; ?>][best_30_sec]" value="1" <?php if(!empty($att['best_30_sec'])) echo 'checked'; ?> <?php if($is_locked) echo 'disabled'; ?>> Best 30 Sec</label>
-                        <label class="point-checkbox"><input type="checkbox" name="awards[<?php echo $uid; ?>][som]" value="1" <?php if(!empty($att['som'])) echo 'checked'; ?> <?php if($is_locked) echo 'disabled'; ?>> SOM</label>
+                        <label class="point-checkbox"><input type="checkbox" name="awards[<?php echo $uid; ?>][early_bird]" value="1" <?php if(!empty($att['early_bird'])) echo 'checked'; ?> <?php if($is_read_only) echo 'disabled'; ?>> Early Bird</label>
+                        <label class="point-checkbox"><input type="checkbox" name="awards[<?php echo $uid; ?>][best_30_sec]" value="1" <?php if(!empty($att['best_30_sec'])) echo 'checked'; ?> <?php if($is_read_only) echo 'disabled'; ?>> Best 30 Sec</label>
+                        <label class="point-checkbox"><input type="checkbox" name="awards[<?php echo $uid; ?>][som]" value="1" <?php if(!empty($att['som'])) echo 'checked'; ?> <?php if($is_read_only) echo 'disabled'; ?>> SOM</label>
                         
                         <?php if ($past_pres == 0 || !empty($att['presentation_8_min'])): ?>
-                            <label class="point-checkbox"><input type="checkbox" name="awards[<?php echo $uid; ?>][presentation_8_min]" value="1" <?php if(!empty($att['presentation_8_min'])) echo 'checked'; ?> <?php if($is_locked) echo 'disabled'; ?>> 8 Min Pres.</label>
+                            <label class="point-checkbox"><input type="checkbox" name="awards[<?php echo $uid; ?>][presentation_8_min]" value="1" <?php if(!empty($att['presentation_8_min'])) echo 'checked'; ?> <?php if($is_read_only) echo 'disabled'; ?>> 8 Min Pres.</label>
                         <?php endif; ?>
                         
                         <?php if ($past_mtp == 0 || !empty($att['mtp'])): ?>
-                            <label class="point-checkbox"><input type="checkbox" name="awards[<?php echo $uid; ?>][mtp]" value="1" <?php if(!empty($att['mtp'])) echo 'checked'; ?> <?php if($is_locked) echo 'disabled'; ?>> MTP</label>
+                            <label class="point-checkbox"><input type="checkbox" name="awards[<?php echo $uid; ?>][mtp]" value="1" <?php if(!empty($att['mtp'])) echo 'checked'; ?> <?php if($is_read_only) echo 'disabled'; ?>> MTP</label>
                         <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>
 
-            <?php if (!$is_locked): ?>
+            <?php if (!$is_read_only): ?>
                 <?php if ($user_role === 'Coordinator'): ?>
                     <button type="submit" class="btn-save"><i class="fa-solid fa-cloud-arrow-up"></i> Verify & Submit Roster</button>
                 <?php else: ?>
@@ -273,7 +285,7 @@ try {
         <!-- NEW VISITOR ROLL CALL SECTION -->
         <?php if (!empty($meeting_visitors)): ?>
             <h2 style="font-size: 15px; font-weight: 800; color: var(--brand-blue); margin: 40px 0 15px 0; border-bottom: 2px solid var(--border); padding-bottom: 8px;"><i class="fa-solid fa-users-viewfinder"></i> Visitor Roll Call</h2>
-            <form action="actions/save_visitor_attendance.php" method="POST" class="<?php if($is_locked) echo 'locked-mode'; ?>" style="margin-bottom: 30px;">
+            <form action="actions/save_visitor_attendance.php" method="POST" class="<?php if($is_read_only) echo 'locked-mode'; ?>" style="margin-bottom: 30px;">
                 <input type="hidden" name="meeting_id" value="<?php echo $active_meeting_id; ?>">
                 <input type="hidden" name="group_id" value="<?php echo $group_id; ?>">
                 
@@ -284,13 +296,13 @@ try {
                             <p style="margin: 0; font-size: 11px; color: var(--text-muted);"><i class="fa-solid fa-user-tag"></i> Invited by: <?php echo htmlspecialchars(trim(($v['inviter_first'] ?? '') . ' ' . ($v['inviter_last'] ?? '')) ?: 'Public Website'); ?></p>
                         </div>
                         <label class="point-checkbox" style="background: <?php echo $v['attended'] ? '#ecfdf5' : '#f8fafc'; ?>; padding: 8px 12px; border-radius: 8px; border: 1px solid <?php echo $v['attended'] ? '#10b981' : '#cbd5e1'; ?>;">
-                            <input type="checkbox" name="attended_visitors[]" value="<?php echo $v['id']; ?>" <?php if($v['attended']) echo 'checked'; ?> <?php if($is_locked) echo 'disabled'; ?>>
+                            <input type="checkbox" name="attended_visitors[]" value="<?php echo $v['id']; ?>" <?php if($v['attended']) echo 'checked'; ?> <?php if($is_read_only) echo 'disabled'; ?>>
                             Showed Up
                         </label>
                     </div>
                 <?php endforeach; ?>
                 
-                <?php if (!$is_locked): ?>
+                <?php if (!$is_read_only): ?>
                     <button type="submit" class="btn-save" style="background:var(--brand-blue); box-shadow: 0 4px 10px rgba(0,32,74,0.3);"><i class="fa-solid fa-floppy-disk"></i> Save Visitor Roll Call</button>
                 <?php endif; ?>
             </form>
@@ -317,8 +329,8 @@ try {
             <p style="text-align:center; color:var(--text-muted); font-size:13px; margin-top: 40px;">No meetings scheduled yet.</p>
         <?php else: ?>
             <?php foreach ($meetings as $mtg): 
-                $mtg_date = strtotime($mtg['meeting_date']);
-                $today = strtotime('today');
+                $today = date('Y-m-d');
+                $mtg_is_future = $mtg['meeting_date'] > $today;
                 
                 $display_status = $mtg['status'];
                 $status_color = '#f59e0b';
@@ -330,7 +342,7 @@ try {
                 if ($mtg['status'] === 'Completed') {
                     $display_status = 'Completed';
                     $status_color = '#10b981';
-                } elseif ($mtg['status'] === 'Scheduled' && $mtg_date < $today) {
+                } elseif ($mtg['status'] === 'Scheduled' && $mtg['meeting_date'] < $today) {
                     $display_status = 'Pending Action';
                     $status_color = '#ef4444'; 
                 }
@@ -357,6 +369,8 @@ try {
                     
                     <?php if ($is_mtg_locked): ?>
                         <a href="attendance_manager.php?meeting_id=<?php echo $mtg['id']; ?>" class="btn-locked"><i class="fa-solid fa-eye"></i> View Read-Only</a>
+                    <?php elseif ($mtg_is_future): ?>
+                        <div class="btn-locked" aria-disabled="true"><i class="fa-regular fa-clock"></i> Opens on <?php echo date('M j, Y', strtotime($mtg['meeting_date'])); ?></div>
                     <?php else: ?>
                         <a href="attendance_manager.php?meeting_id=<?php echo $mtg['id']; ?>" class="btn-enter"><i class="fa-solid fa-pen-to-square"></i> Take Attendance</a>
                     <?php endif; ?>

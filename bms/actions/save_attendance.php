@@ -26,14 +26,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmtRole->execute([$_SESSION['user_id']]);
         $authorized_group_id = $stmtRole->fetchColumn();
 
-        $stmtMeeting = $pdo->prepare("SELECT group_id, meeting_date FROM chapter_meetings WHERE id = ? AND meeting_type <> 'Daily Status'");
+        $stmtMeeting = $pdo->prepare("SELECT group_id, meeting_date FROM chapter_meetings WHERE id = ? AND meeting_type IN ('Meeting', 'Event', 'SOM')");
         $stmtMeeting->execute([$meeting_id]);
         $meeting = $stmtMeeting->fetch();
 
         if (!$authorized_group_id || !$meeting || (int)$meeting['group_id'] !== (int)$authorized_group_id) {
             throw new RuntimeException('You cannot save attendance for this chapter meeting.');
         }
-        $stmtNewerCompleted = $pdo->prepare("SELECT COUNT(*) FROM chapter_meetings WHERE group_id = ? AND meeting_type <> 'Daily Status' AND meeting_date > ? AND status = 'Completed'");
+        if ($meeting['meeting_date'] > date('Y-m-d')) {
+            throw new RuntimeException('Attendance opens on the scheduled meeting day.');
+        }
+        $stmtNewerCompleted = $pdo->prepare("SELECT COUNT(*) FROM chapter_meetings WHERE group_id = ? AND meeting_type IN ('Meeting', 'Event', 'SOM') AND meeting_date > ? AND status = 'Completed'");
         $stmtNewerCompleted->execute([$authorized_group_id, $meeting['meeting_date']]);
         if ($stmtNewerCompleted->fetchColumn() > 0) {
             throw new RuntimeException('This meeting is locked because a later meeting is already complete.');

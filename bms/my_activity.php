@@ -154,7 +154,7 @@ function format_money($amount) {
 
         .btn-action-sm { background: #3b82f6; color: white; border: none; padding: 5px 10px; border-radius: 6px; font-size: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 5px; display: inline-block;}
         
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px 0; display: flex; justify-content: space-around; border-radius: 20px 20px 0 0; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(16px); z-index: 100; border-top: 1px solid rgba(255,255,255,0.1);}
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: min(100vw, 640px); max-width: 640px; box-sizing: border-box; padding: 15px 8px calc(15px + env(safe-area-inset-bottom)); display: flex; justify-content: space-around; border-radius: 20px 20px 0 0; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(16px); z-index: 100; border-top: 1px solid rgba(255,255,255,0.1);}
         .nav-item { color: rgba(255,255,255,0.6); text-decoration: none; text-align: center; font-size: 11px; font-weight: 500; transition: color 0.3s; }
         .nav-item.active { color: var(--primary-orange); }
         .nav-item i { display: block; font-size: 20px; margin-bottom: 5px; }

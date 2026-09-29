@@ -300,7 +300,7 @@ try {
     }
 
     if ($group_id) {
-        $stmtHT = $pdo->prepare("SELECT u.first_name, u.last_name, u.profile_photo FROM group_members gm JOIN users u ON gm.user_id = u.id WHERE gm.group_id = ? AND gm.leadership_role = 'Coordinator' AND gm.membership_status = 'Active'");
+        $stmtHT = $pdo->prepare("SELECT u.first_name, u.last_name, u.profile_photo, GROUP_CONCAT(DISTINCT cr.role_name ORDER BY cr.role_name SEPARATOR '|') as officer_roles FROM group_members gm JOIN users u ON gm.user_id = u.id LEFT JOIN term_leadership tl ON tl.group_member_id = gm.id AND tl.group_id = gm.group_id AND CURDATE() BETWEEN tl.start_date AND tl.end_date LEFT JOIN chapter_roles cr ON cr.id = tl.role_id AND cr.role_level = 'HEAD_TABLE' WHERE gm.group_id = ? AND gm.leadership_role = 'Coordinator' AND gm.membership_status = 'Active' GROUP BY gm.id, u.id, u.first_name, u.last_name, u.profile_photo ORDER BY u.first_name ASC");
         $stmtHT->execute([$group_id]); $head_table = $stmtHT->fetchAll();
 
         // ONLY LOAD LOCAL CHAPTER MEMBERS FOR NORMAL MODALS
@@ -324,7 +324,7 @@ try {
             'date' => strtotime($row['date_logged']),
             'title' => 'New Link Received',
             'desc' => "{$row['first_name']} {$row['last_name']} passed you an {$row['referral_type']} referral.",
-            'icon' => 'fa-link', 'color' => '#3b82f6'
+            'icon' => 'fa-link', 'color' => '#3b82f6', 'url' => 'my_activity.php'
         ];
     }
 
@@ -336,7 +336,7 @@ try {
             'date' => strtotime($row['date_logged']),
             'title' => 'Deal Closed!',
             'desc' => "{$row['first_name']} {$row['last_name']} thanked you for ₹" . number_format($row['amount']) . " in business.",
-            'icon' => 'fa-sack-dollar', 'color' => '#10b981'
+            'icon' => 'fa-sack-dollar', 'color' => '#10b981', 'url' => 'my_activity.php'
         ];
     }
 
@@ -360,7 +360,7 @@ try {
         $notifications[] = [
             'date' => strtotime($row['visit_date']),
             'title' => 'Visitor Update',
-            'desc' => $desc, 'icon' => $icon, 'color' => $color
+            'desc' => $desc, 'icon' => $icon, 'color' => $color, 'url' => 'my_activity.php'
         ];
     }
 
@@ -378,7 +378,7 @@ try {
             'date' => strtotime($row['meeting_date']),
             'title' => 'Attendance Logged',
             'desc' => "You were marked as {$status} for the meeting on " . date('M d', strtotime($row['meeting_date'])) . ".",
-            'icon' => $icon, 'color' => $color
+            'icon' => $icon, 'color' => $color, 'url' => 'my_activity.php'
         ];
     }
 
@@ -391,7 +391,7 @@ try {
                 'date' => time() + 100, // Put it at the top
                 'title' => 'Action Required (Coordinator)',
                 'desc' => "The {$row['meeting_type']} on " . date('M d', strtotime($row['meeting_date'])) . " needs to be marked as 'Completed' to lock attendance.",
-                'icon' => 'fa-triangle-exclamation', 'color' => '#ef4444'
+                'icon' => 'fa-triangle-exclamation', 'color' => '#ef4444', 'url' => 'head_table.php'
             ];
         }
     }
@@ -431,7 +431,15 @@ function format_money($amount) {
         .top-nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .notification-bell { position: relative; cursor: pointer; background: rgba(255,255,255,0.1); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; transition: 0.3s; border: 1px solid rgba(255,255,255,0.2);}
         .notification-bell:hover { background: rgba(255,255,255,0.2); }
+        .notification-bell:focus-visible, .notification-item:focus-visible, .target-edit-btn:focus-visible { outline: 2px solid #fbbf24; outline-offset: 3px; }
         .badge-dot { position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; box-shadow: 0 0 0 2px var(--dark-blue);}
+        .notification-list { display: flex; flex-direction: column; }
+        .notification-item { display: flex; gap: 12px; padding: 13px 4px; border-bottom: 1px solid rgba(255,255,255,0.08); color: inherit; text-decoration: none; border-radius: 8px; }
+        .notification-item:hover { background: rgba(255,255,255,0.06); }
+        .notification-copy { flex: 1; min-width: 0; }
+        .notification-date { display: block; margin-top: 5px; font-size: 10px; color: rgba(255,255,255,0.45); }
+        .notification-action { margin-top: 7px; display: inline-flex; align-items: center; gap: 5px; color: #93c5fd; font-size: 11px; font-weight: 700; }
+        .target-edit-btn { background: rgba(255,107,0,0.12); color: var(--primary-orange); border: 1px solid rgba(255,107,0,0.35); padding: 7px 10px; border-radius: 7px; font-size: 11px; font-weight: 700; cursor: pointer; white-space: nowrap; }
 
         .glass-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 20px; margin-bottom: 20px; border-radius: 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(16px); flex-wrap: wrap;}
         .header-left { display: flex; gap: 15px; align-items: center; width: 100%;}
@@ -445,10 +453,12 @@ function format_money($amount) {
         .badge-rising-star { background: linear-gradient(135deg, #38bdf8, #0284c7); color: white; border-color: #7dd3fc; }
         .badge-star { background: linear-gradient(135deg, #9ca3af, #4b5563); color: white; border-color: #d1d5db; }
         
-        .ht-stack { display: flex; flex-direction: column; align-items: flex-end; margin-left: auto;}
+        .ht-stack { display: flex; flex-direction: column; align-items: flex-end; margin-left: auto; max-width: 48%;}
         .ht-title { font-size: 9px; color: rgba(255,255,255,0.5); font-weight: 700; letter-spacing: 0.5px; margin-bottom: 5px; text-transform: uppercase; }
-        .ht-avatars { display: flex; justify-content: flex-end; }
-        .ht-avatars img { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--dark-blue); margin-left: -10px; object-fit: cover; background: #fbbf24; }
+        .ht-avatars { display: flex; justify-content: flex-end; align-items: flex-start; gap: 8px; flex-wrap: wrap; }
+        .ht-person { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 54px; }
+        .ht-avatars img { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--dark-blue); object-fit: cover; background: #fbbf24; }
+        .ht-role-tag { width: 100%; color: #fde68a; font-size: 7px; line-height: 1.2; font-weight: 700; text-align: center; overflow-wrap: anywhere; }
         
         .attendance-inline-bar { margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; text-align: center; width: 100%; gap: 5px;}
         .attendance-stat { flex: 1; border-right: 1px solid rgba(255,255,255,0.1); }
@@ -526,10 +536,10 @@ function format_money($amount) {
     <!-- TOP NAV WITH NOTIFICATIONS -->
     <div class="top-nav-bar">
         <h1 style="color: white; font-size: 22px; margin: 0; font-weight: 800; letter-spacing: 0.5px;">WE <span style="color: var(--primary-orange);">KONNECTS</span></h1>
-        <div class="notification-bell" onclick="openModal('modalNotifications')">
+        <button type="button" class="notification-bell" aria-label="Open notifications" aria-haspopup="dialog" aria-controls="modalNotifications" onclick="openModal('modalNotifications')">
             <i class="fa-solid fa-bell"></i>
-            <?php if(count($notifications) > 0): ?><span class="badge-dot"></span><?php endif; ?>
-        </div>
+            <?php if(count($notifications) > 0): ?><span class="badge-dot" aria-label="<?php echo count($notifications); ?> notifications"></span><?php endif; ?>
+        </button>
     </div>
     
     <?php if (isset($_SESSION['success_msg'])): ?>
@@ -578,7 +588,15 @@ function format_money($amount) {
                 <span class="ht-title">Head Table</span>
                 <div class="ht-avatars">
                     <?php foreach($head_table as $ht): ?>
-                        <img src="assets/uploads/profiles/<?php echo htmlspecialchars($ht['profile_photo'] ?? 'default.png'); ?>" title="<?php echo htmlspecialchars($ht['first_name']); ?>" onerror="this.src='assets/uploads/profiles/default.png'">
+                        <div class="ht-person" title="<?php echo htmlspecialchars($ht['first_name'] . ' ' . $ht['last_name']); ?>">
+                            <img src="assets/uploads/profiles/<?php echo htmlspecialchars($ht['profile_photo'] ?? 'default.png'); ?>" alt="<?php echo htmlspecialchars($ht['first_name']); ?>" onerror="this.src='assets/uploads/profiles/default.png'">
+                            <?php $officer_roles = array_filter(explode('|', $ht['officer_roles'] ?? '')); ?>
+                            <?php if ($officer_roles): foreach ($officer_roles as $officer_role): ?>
+                                <span class="ht-role-tag"><?php echo htmlspecialchars($officer_role); ?></span>
+                            <?php endforeach; else: ?>
+                                <span class="ht-role-tag">Head Table</span>
+                            <?php endif; ?>
+                        </div>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -627,6 +645,9 @@ function format_money($amount) {
     <div class="modern-section">
         <div class="section-header">
             <h3 class="section-title">Chapter Targets (This Cycle)</h3>
+            <?php if ($lead_role === 'Coordinator'): ?>
+                <button type="button" class="target-edit-btn" onclick="openModal('modalChapterTargets')"><i class="fa-solid fa-pen-to-square"></i> Edit Targets</button>
+            <?php endif; ?>
         </div>
         <div class="progress-box">
             <div class="progress-header"><span>Active Members</span><span><?php echo ($chapter_stats['total_members'] ?? 0); ?> / <?php echo $target_members; ?></span></div>
@@ -648,6 +669,32 @@ function format_money($amount) {
             <i class="fa-solid fa-triangle-exclamation alert-icon"></i>
             <div>
                 <strong style="color: #ef4444; font-size: 14px; display:block; margin-bottom: 3px;">Warning: Absence Limit Reached</strong>
+            <?php if ($group_id && $lead_role === 'Coordinator'): ?>
+            <div class="modal-overlay" id="modalChapterTargets">
+                <div class="modal-box">
+                    <i class="fa-solid fa-xmark close-modal" onclick="closeModal('modalChapterTargets')"></i>
+                    <h3 style="margin-top:0; color:white; border-bottom:1px solid rgba(255,255,255,0.12); padding-bottom:10px;">Edit Chapter Targets</h3>
+                    <p style="font-size:12px; color:rgba(255,255,255,0.65); margin-bottom:18px;"><?php echo htmlspecialchars($group_name); ?> · This cycle</p>
+                    <form action="actions/update_chapter_targets.php" method="POST">
+                        <input type="hidden" name="group_id" value="<?php echo (int)$group_id; ?>">
+                        <div class="form-group">
+                            <label for="targetMembers">Active member target</label>
+                            <input id="targetMembers" type="number" name="target_members" class="glass-input" min="1" step="1" value="<?php echo (int)$target_members; ?>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="targetLinks">Referral links target</label>
+                            <input id="targetLinks" type="number" name="target_links" class="glass-input" min="0" step="1" value="<?php echo (int)$target_links; ?>" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="targetRevenue">Revenue target (₹)</label>
+                            <input id="targetRevenue" type="number" name="target_revenue" class="glass-input" min="0" step="0.01" value="<?php echo htmlspecialchars((string)$target_rev); ?>" required>
+                        </div>
+                        <button type="submit" class="btn-primary" style="width:100%; padding:12px;"><i class="fa-solid fa-floppy-disk"></i> Save Targets</button>
+                    </form>
+                </div>
+            </div>
+            <?php endif; ?>
+
                 You currently have <strong><?php echo $mtg_absents; ?> absences</strong> within your rolling 6-month period. Please improve attendance to avoid membership suspension. 
                 <?php if ($mtg_absents >= 6) echo "<br><br><strong>ACTION REQUIRED: Contact Head Table immediately.</strong>"; ?>
             </div>
@@ -830,27 +877,28 @@ function format_money($amount) {
 
 <!-- NOTIFICATION MODAL ENGINE -->
 <div class="modal-overlay" id="modalNotifications">
-    <div class="modal-box" style="max-height: 80vh; overflow-y: auto;">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="notificationTitle" style="max-height: 80vh; overflow-y: auto;">
         <i class="fa-solid fa-xmark close-modal" onclick="closeModal('modalNotifications')"></i>
-        <h3 style="margin-top:0; color:white; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+        <h3 id="notificationTitle" style="margin-top:0; color:white; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
             <i class="fa-solid fa-bell" style="color:var(--brand-orange);"></i> Notifications
         </h3>
         
         <?php if (empty($notifications)): ?>
             <p style="text-align:center; color:rgba(255,255,255,0.5); font-size: 13px; margin: 20px 0;">You have no new notifications.</p>
         <?php else: ?>
-            <div style="display: flex; flex-direction: column;">
+            <div class="notification-list">
                 <?php foreach ($notifications as $n): ?>
-                    <div style="display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                        <div style="width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; color: white; background: <?php echo $n['color']; ?>;">
+                    <a class="notification-item" href="<?php echo htmlspecialchars($n['url'] ?? 'my_activity.php'); ?>" onclick="closeModal('modalNotifications')">
+                        <span style="width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; color:white; background:<?php echo htmlspecialchars($n['color']); ?>;">
                             <i class="fa-solid <?php echo $n['icon']; ?>"></i>
-                        </div>
-                        <div>
+                        </span>
+                        <span class="notification-copy">
                             <h4 style="margin: 0 0 3px 0; font-size: 13px; color: white; font-weight: 600;"><?php echo htmlspecialchars($n['title']); ?></h4>
                             <p style="margin: 0 0 4px 0; font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.4;"><?php echo htmlspecialchars($n['desc']); ?></p>
-                            <span style="font-size: 10px; color: rgba(255,255,255,0.4);"><?php echo ($n['date'] > time()) ? 'Just Now' : date('M d, Y', $n['date']); ?></span>
-                        </div>
-                    </div>
+                            <span class="notification-date"><?php echo date('M d, Y', $n['date']); ?></span>
+                            <span class="notification-action">View details <i class="fa-solid fa-arrow-right"></i></span>
+                        </span>
+                    </a>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
@@ -868,6 +916,16 @@ function format_money($amount) {
         const m = document.getElementById(modalId); 
         if(m) m.style.display = 'none'; 
     }
+    document.getElementById('modalNotifications').addEventListener('click', function(event) {
+        if (event.target === this) closeModal('modalNotifications');
+    });
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                if (modal.style.display === 'flex') closeModal(modal.id);
+            });
+        }
+    });
     function copyInviteLink(linkText, btnElement) {
         navigator.clipboard.writeText(linkText).then(() => {
             const originalHTML = btnElement.innerHTML;

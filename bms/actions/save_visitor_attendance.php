@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmtRole->execute([$_SESSION['user_id']]);
         $authorized_group_id = $stmtRole->fetchColumn();
 
-        $stmtDate = $pdo->prepare("SELECT group_id, meeting_date FROM chapter_meetings WHERE id = ?");
+        $stmtDate = $pdo->prepare("SELECT group_id, meeting_date FROM chapter_meetings WHERE id = ? AND meeting_type IN ('Meeting', 'Event', 'SOM')");
         $stmtDate->execute([$meeting_id]);
         $meeting = $stmtDate->fetch();
 
@@ -22,7 +22,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new RuntimeException('Unauthorized meeting roll call.');
         }
 
-        $stmtLocked = $pdo->prepare("SELECT COUNT(*) FROM chapter_meetings WHERE group_id = ? AND meeting_type <> 'Daily Status' AND meeting_date > ? AND status = 'Completed'");
+        if ($meeting['meeting_date'] > date('Y-m-d')) {
+            throw new RuntimeException('Visitor attendance opens on the scheduled meeting day.');
+        }
+
+        $stmtLocked = $pdo->prepare("SELECT COUNT(*) FROM chapter_meetings WHERE group_id = ? AND meeting_type IN ('Meeting', 'Event', 'SOM') AND meeting_date > ? AND status = 'Completed'");
         $stmtLocked->execute([$authorized_group_id, $meeting['meeting_date']]);
         if ($stmtLocked->fetchColumn() > 0) {
             throw new RuntimeException('This visitor roll call is locked because a later meeting is already complete.');

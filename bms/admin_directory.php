@@ -26,6 +26,14 @@ try {
             SELECT u.id, u.first_name, u.last_name, u.email, u.phone, u.status as user_status, u.invited_by,
                    b.company_name, b.business_category_applied,
                    gm.joining_date, gm.renewal_date, gm.leadership_role, gm.membership_status,
+                                     COALESCE((
+                                             SELECT cr.role_name
+                                             FROM term_leadership tl
+                                             JOIN chapter_roles cr ON tl.role_id = cr.id
+                                             WHERE tl.group_member_id = gm.id AND tl.group_id = gm.group_id
+                                                 AND CURDATE() BETWEEN tl.start_date AND tl.end_date
+                                             ORDER BY tl.start_date DESC LIMIT 1
+                                     ), '') as officer_role,
                    inviter.first_name as inviter_name, inviter.last_name as inviter_last
             FROM users u
             JOIN group_members gm ON u.id = gm.user_id
@@ -158,7 +166,7 @@ try {
                                 <button onclick="openStatusModal(<?php echo $m['id']; ?>, '<?php echo addslashes(htmlspecialchars($m['first_name'])); ?>', '<?php echo $m['user_status']; ?>')" class="action-btn" style="color:#dc2626; border-color:#fecaca;"><i class="fa-solid fa-ban"></i> Status</button>
                                 <a href="edit_member.php?id=<?php echo $m['id']; ?>&amp;return_to=admin_directory.php&amp;chapter_id=<?php echo $active_chapter_id; ?>" class="action-btn btn-edit"><i class="fa-solid fa-pen"></i> Edit</a>
                                 <button onclick="openTransferModal(<?php echo $m['id']; ?>, '<?php echo addslashes(htmlspecialchars($m['first_name'] . ' ' . $m['last_name'])); ?>')" class="action-btn"><i class="fa-solid fa-arrow-right-arrow-left"></i> Transfer</button>
-                                <button onclick="openRoleModal(<?php echo $m['id']; ?>, '<?php echo addslashes(htmlspecialchars($m['first_name'])); ?>', '<?php echo $m['leadership_role']; ?>')" class="action-btn" style="color:#d97706; border-color:#fcd34d;"><i class="fa-solid fa-user-shield"></i> Role</button>
+                                <button onclick="openRoleModal(<?php echo $m['id']; ?>, '<?php echo addslashes(htmlspecialchars($m['first_name'])); ?>', '<?php echo $m['leadership_role']; ?>', '<?php echo htmlspecialchars($m['officer_role'], ENT_QUOTES); ?>')" class="action-btn" style="color:#d97706; border-color:#fcd34d;"><i class="fa-solid fa-user-shield"></i> Role</button>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -233,8 +241,18 @@ try {
             <input type="hidden" name="user_id" id="roleUserId">
             <input type="hidden" name="chapter_id" value="<?php echo $active_chapter_id; ?>">
             <div class="form-group"><label>Select Role</label>
-                <select name="leadership_role" id="roleSelect" class="form-input" required>
+                <select name="leadership_role" id="roleSelect" class="form-input" required onchange="toggleOfficerRole()">
                     <option value="Member">Standard Member</option><option value="Coordinator">Head Table (Coordinator)</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Head Table Position</label>
+                <select name="officer_role" id="officerRoleSelect" class="form-input">
+                    <option value="">No officer title</option>
+                    <option value="President">President</option>
+                    <option value="Vice President">Vice President</option>
+                    <option value="Secretary">Secretary</option>
+                    <option value="Treasurer">Treasurer</option>
+                    <option value="Visitor Host Leader">Visitor Host Leader</option>
                 </select>
             </div>
             <button type="submit" style="background:var(--dark-blue); color:white; border:none; padding:12px; width:100%; border-radius:8px; font-weight:700; cursor:pointer;">Update Role</button>
@@ -260,10 +278,18 @@ try {
         document.getElementById('transferUserId').value = userId;
         document.getElementById('modalTransfer').style.display = 'flex';
     }
-    function openRoleModal(userId, userName, currentRole) {
+    function openRoleModal(userId, userName, currentRole, officerRole) {
         document.getElementById('roleUserId').value = userId;
         document.getElementById('roleSelect').value = currentRole;
+        document.getElementById('officerRoleSelect').value = officerRole || '';
+        toggleOfficerRole();
         document.getElementById('modalRole').style.display = 'flex';
+    }
+    function toggleOfficerRole() {
+        const isHeadTable = document.getElementById('roleSelect').value === 'Coordinator';
+        const officerSelect = document.getElementById('officerRoleSelect');
+        officerSelect.disabled = !isHeadTable;
+        if (!isHeadTable) officerSelect.value = '';
     }
     function closeModal(modalId) { document.getElementById(modalId).style.display = 'none'; }
 </script>
