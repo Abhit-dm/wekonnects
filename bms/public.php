@@ -38,13 +38,13 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
                (SELECT COUNT(*) FROM slips WHERE initiator_member_id = u.id AND slip_type = 'REFERRAL') as total_links_given,
                (SELECT COALESCE(SUM(amount), 0) FROM slips WHERE (initiator_member_id = u.id OR receiver_member_id = u.id) AND slip_type = 'TYFCB') as total_deal_value,
                (
-                   (SELECT COUNT(*) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_type <> 'Daily Status' AND a.attendance_status IN ('Present', 'Late')) * 1 +
-                   (SELECT COALESCE(SUM(a.early_bird), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id) * 1 +
-                   (SELECT COALESCE(SUM(a.status_update), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id) * 1 +
-                   (SELECT COALESCE(SUM(a.best_30_sec), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id) * 1 +
-                   (SELECT COALESCE(SUM(a.presentation_8_min), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id) * 5 +
-                   (SELECT COALESCE(SUM(a.som), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id) * 10 +
-                   (SELECT COALESCE(SUM(a.mtp), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id) * 25 +
+                   (SELECT COUNT(*) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_type IN ('Meeting', 'Event', 'SOM') AND a.attendance_status IN ('Present', 'Late') AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date)) * 1 +
+                   (SELECT COALESCE(SUM(a.early_bird), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_type IN ('Meeting', 'Event', 'SOM') AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date)) * 1 +
+                   (SELECT COALESCE(SUM(a.status_update), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_type IN ('Meeting', 'Event', 'SOM') AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date)) * 1 +
+                   (SELECT COALESCE(SUM(a.best_30_sec), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_type IN ('Meeting', 'Event', 'SOM') AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date)) * 1 +
+                   (SELECT COALESCE(SUM(a.presentation_8_min), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_type IN ('Meeting', 'Event', 'SOM') AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date)) * 5 +
+                   (SELECT COALESCE(SUM(a.som), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_type IN ('Meeting', 'Event', 'SOM') AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date)) * 10 +
+                   (SELECT COALESCE(SUM(a.mtp), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_type IN ('Meeting', 'Event', 'SOM') AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date)) * 25 +
                    (SELECT COUNT(*) FROM slips WHERE initiator_member_id = u.id AND slip_type = '121') * 1 +
                    (SELECT COUNT(*) FROM slips WHERE initiator_member_id = u.id AND slip_type = 'REFERRAL' AND referral_type = 'INSIDE') * 2 +
                    (SELECT COUNT(*) FROM slips WHERE initiator_member_id = u.id AND slip_type = 'REFERRAL' AND referral_type = 'OUTSIDE') * 4 +
@@ -118,7 +118,10 @@ if (!$profile_mode) {
                    SUM(a.presentation_8_min) as presentation_8_min_sum,
                    SUM(a.som) as som_sum,
                    SUM(a.mtp) as mtp_sum
-            FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id
+                        FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id
+                        JOIN group_members gm_att ON gm_att.user_id = a.user_id AND gm_att.group_id = cm.group_id AND gm_att.membership_status = 'Active'
+                        WHERE cm.meeting_type IN ('Meeting', 'Event', 'SOM')
+                            AND cm.meeting_date >= COALESCE(NULLIF(gm_att.joining_date, '0000-00-00'), gm_att.join_date)
             GROUP BY a.user_id, cm.group_id
         ) att ON u.id = att.user_id AND gm.group_id = att.group_id
         LEFT JOIN (

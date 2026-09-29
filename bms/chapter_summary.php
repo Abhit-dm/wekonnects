@@ -97,7 +97,7 @@ try {
             FROM group_members gm
             JOIN users u ON gm.user_id = u.id
             LEFT JOIN businesses b ON u.id = b.user_id
-            LEFT JOIN chapter_meetings cm ON cm.group_id = gm.group_id AND cm.meeting_type IN ('Meeting', 'Event', 'SOM') AND cm.meeting_date >= ? AND cm.meeting_date <= ?
+            LEFT JOIN chapter_meetings cm ON cm.group_id = gm.group_id AND cm.meeting_type IN ('Meeting', 'Event', 'SOM') AND cm.meeting_date >= ? AND cm.meeting_date <= ? AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date)
             LEFT JOIN attendance a ON a.meeting_id = cm.id AND a.user_id = u.id
             WHERE gm.group_id = ? AND gm.membership_status = 'Active'
             GROUP BY u.id

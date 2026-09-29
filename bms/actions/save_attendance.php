@@ -45,15 +45,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             throw new RuntimeException('Select attendance for at least one member before saving.');
         }
 
-        $stmtMembers = $pdo->prepare("SELECT user_id FROM group_members WHERE group_id = ? AND membership_status = 'Active'");
+        $stmtMembers = $pdo->prepare("SELECT user_id, COALESCE(NULLIF(joining_date, '0000-00-00'), join_date) as member_start_date FROM group_members WHERE group_id = ? AND membership_status = 'Active'");
         $stmtMembers->execute([$authorized_group_id]);
-        $active_member_ids = array_fill_keys($stmtMembers->fetchAll(PDO::FETCH_COLUMN), true);
+        $active_members = [];
+        foreach ($stmtMembers->fetchAll() as $member) {
+            $active_members[$member['user_id']] = $member['member_start_date'];
+        }
 
         $pdo->beginTransaction();
         $saved_count = 0;
 
         foreach ($attendance as $user_id => $status) {
-            if (!isset($active_member_ids[$user_id]) || !in_array($status, ['Present', 'Absent', 'Late', 'Substitute'], true)) {
+            if (!isset($active_members[$user_id]) || $active_members[$user_id] > $meeting['meeting_date'] || !in_array($status, ['Present', 'Absent', 'Late', 'Substitute'], true)) {
                 continue;
             }
 

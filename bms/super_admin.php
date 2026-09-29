@@ -35,7 +35,9 @@ try {
                 SELECT COALESCE(ROUND((SUM(CASE WHEN a.attendance_status IN ('Present', 'Late', 'Substitute') THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0)) * 100), 100)
                 FROM attendance a 
                 JOIN chapter_meetings cm ON a.meeting_id = cm.id 
-                WHERE cm.group_id = g.id AND cm.meeting_type <> 'Daily Status' AND cm.meeting_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                                JOIN group_members gm ON gm.user_id = a.user_id AND gm.group_id = cm.group_id AND gm.membership_status = 'Active'
+                                WHERE cm.group_id = g.id AND cm.meeting_type IN ('Meeting', 'Event', 'SOM')
+                                    AND cm.meeting_date >= GREATEST(DATE_SUB(CURDATE(), INTERVAL 6 MONTH), COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date))
             ) as att_perc
         FROM groups g 
         WHERE g.status = 'Active'

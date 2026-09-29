@@ -117,13 +117,13 @@ try {
         $sqlPoints = "
             SELECT u.id as member_id,
                 (
-                    (SELECT COUNT(*) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND a.attendance_status IN ('Present', 'Late') AND cm.group_id = gm.group_id AND cm.meeting_type <> 'Daily Status' AND cm.meeting_date >= ?) * 1 +
-                    (SELECT COALESCE(SUM(a.early_bird), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_date >= ?) * 1 +
-                    (SELECT COALESCE(SUM(a.status_update), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_date >= ?) * 1 +
-                    (SELECT COALESCE(SUM(a.best_30_sec), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_date >= ?) * 1 +
-                    (SELECT COALESCE(SUM(a.presentation_8_min), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_date >= ?) * 5 +
-                    (SELECT COALESCE(SUM(a.som), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_date >= ?) * 10 +
-                    (SELECT COALESCE(SUM(a.mtp), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_date >= ?) * 25 +
+                    (SELECT COUNT(*) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND a.attendance_status IN ('Present', 'Late') AND cm.group_id = gm.group_id AND cm.meeting_type <> 'Daily Status' AND cm.meeting_date >= ? AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date)) * 1 +
+                    (SELECT COALESCE(SUM(a.early_bird), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_date >= ? AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date)) * 1 +
+                    (SELECT COALESCE(SUM(a.status_update), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_date >= ? AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date)) * 1 +
+                    (SELECT COALESCE(SUM(a.best_30_sec), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_date >= ? AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date)) * 1 +
+                    (SELECT COALESCE(SUM(a.presentation_8_min), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_date >= ? AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date)) * 5 +
+                    (SELECT COALESCE(SUM(a.som), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_date >= ? AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date)) * 10 +
+                    (SELECT COALESCE(SUM(a.mtp), 0) FROM attendance a JOIN chapter_meetings cm ON a.meeting_id = cm.id WHERE a.user_id = u.id AND cm.group_id = gm.group_id AND cm.meeting_date >= ? AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date)) * 25 +
                     (SELECT COUNT(*) FROM slips WHERE initiator_member_id = u.id AND slip_type = '121' AND COALESCE(NULLIF(link_given_date, ''), DATE(date_logged)) >= ?) * 1 +
                     (SELECT COUNT(*) FROM slips WHERE initiator_member_id = u.id AND slip_type = 'REFERRAL' AND referral_type = 'INSIDE' AND COALESCE(NULLIF(link_given_date, ''), DATE(date_logged)) >= ?) * 2 +
                     (SELECT COUNT(*) FROM slips WHERE initiator_member_id = u.id AND slip_type = 'REFERRAL' AND referral_type = 'OUTSIDE' AND COALESCE(NULLIF(link_given_date, ''), DATE(date_logged)) >= ?) * 4 +
@@ -166,21 +166,24 @@ try {
 
         try {
             $stmtRollingAtt = $pdo->prepare("
-                SELECT SUM(CASE WHEN a.attendance_status LIKE '%Absent%' THEN 1 ELSE 0 END) as mtg_abs
+                                SELECT SUM(CASE WHEN a.attendance_status = 'Absent' THEN 1 ELSE 0 END) as mtg_abs
                 FROM attendance a
                 JOIN chapter_meetings cm ON a.meeting_id = cm.id
-                WHERE a.user_id = ? AND cm.group_id = ? AND cm.meeting_type NOT LIKE '%SOM%' AND cm.meeting_type <> 'Daily Status' AND cm.meeting_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                                JOIN group_members gm ON gm.user_id = a.user_id AND gm.group_id = cm.group_id AND gm.membership_status = 'Active'
+                                WHERE a.user_id = ? AND cm.group_id = ? AND cm.meeting_type IN ('Meeting', 'Event')
+                                    AND cm.meeting_date >= GREATEST(DATE_SUB(CURDATE(), INTERVAL 6 MONTH), COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date))
             ");
             $stmtRollingAtt->execute([$user_id, $group_id]);
             $mtg_absents = (int)($stmtRollingAtt->fetchColumn());
 
             $stmtAtt = $pdo->prepare("
                 SELECT 
-                    SUM(CASE WHEN (a.attendance_status LIKE '%Present%' OR a.attendance_status LIKE '%Late%') AND cm.meeting_type LIKE '%SOM%' THEN 1 ELSE 0 END) as som_attended,
-                    SUM(CASE WHEN a.attendance_status LIKE '%Substitute%' THEN 1 ELSE 0 END) as total_subs
+                    SUM(CASE WHEN (a.attendance_status IN ('Present', 'Late')) AND cm.meeting_type = 'SOM' THEN 1 ELSE 0 END) as som_attended,
+                    SUM(CASE WHEN a.attendance_status = 'Substitute' AND cm.meeting_type IN ('Meeting', 'Event', 'SOM') THEN 1 ELSE 0 END) as total_subs
                 FROM attendance a
                 JOIN chapter_meetings cm ON a.meeting_id = cm.id
-                WHERE a.user_id = ? AND cm.group_id = ?
+                JOIN group_members gm ON gm.user_id = a.user_id AND gm.group_id = cm.group_id AND gm.membership_status = 'Active'
+                WHERE a.user_id = ? AND cm.group_id = ? AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date)
             ");
             $stmtAtt->execute([$user_id, $group_id]);
             $att_stats = $stmtAtt->fetch(PDO::FETCH_ASSOC);
@@ -279,13 +282,14 @@ try {
 
         $stmtPerf = $pdo->prepare("
             SELECT 
-                SUM(CASE WHEN cm.meeting_type NOT LIKE '%SOM%' AND cm.meeting_type <> 'Daily Status' AND (a.attendance_status LIKE '%Present%' OR a.attendance_status LIKE '%Late%') THEN 1 ELSE 0 END) as mtg_present,
-                SUM(CASE WHEN cm.meeting_type NOT LIKE '%SOM%' AND cm.meeting_type <> 'Daily Status' AND a.attendance_status LIKE '%Absent%' THEN 1 ELSE 0 END) as mtg_absent,
-                SUM(CASE WHEN cm.meeting_type LIKE '%SOM%' AND (a.attendance_status LIKE '%Present%' OR a.attendance_status LIKE '%Late%') THEN 1 ELSE 0 END) as som_present,
-                SUM(CASE WHEN cm.meeting_type LIKE '%SOM%' AND a.attendance_status LIKE '%Absent%' THEN 1 ELSE 0 END) as som_absent
+                SUM(CASE WHEN cm.meeting_type IN ('Meeting', 'Event') AND a.attendance_status IN ('Present', 'Late') THEN 1 ELSE 0 END) as mtg_present,
+                SUM(CASE WHEN cm.meeting_type IN ('Meeting', 'Event') AND a.attendance_status = 'Absent' THEN 1 ELSE 0 END) as mtg_absent,
+                SUM(CASE WHEN cm.meeting_type = 'SOM' AND a.attendance_status IN ('Present', 'Late') THEN 1 ELSE 0 END) as som_present,
+                SUM(CASE WHEN cm.meeting_type = 'SOM' AND a.attendance_status = 'Absent' THEN 1 ELSE 0 END) as som_absent
             FROM attendance a
             JOIN chapter_meetings cm ON a.meeting_id = cm.id
-            WHERE a.user_id = ? AND cm.group_id = ? AND $perf_att_cond
+            JOIN group_members gm ON gm.user_id = a.user_id AND gm.group_id = cm.group_id AND gm.membership_status = 'Active'
+            WHERE a.user_id = ? AND cm.group_id = ? AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date) AND $perf_att_cond
         ");
         $stmtPerf->execute([$user_id, $group_id]);
         $perf_stats = $stmtPerf->fetch();

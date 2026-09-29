@@ -40,6 +40,7 @@ try {
         SELECT u.id, u.first_name, u.last_name, u.email, u.phone, u.status as user_status, u.system_role, u.profile_photo,
                b.company_name, b.business_category_applied,
                g.id as group_id, g.group_name, gm.leadership_role,
+               COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date) as member_start_date,
                att.total_mtg, att.present_count
         FROM users u
         LEFT JOIN businesses b ON u.id = b.user_id
@@ -51,7 +52,9 @@ try {
                    SUM(CASE WHEN a.attendance_status IN ('Present', 'Late', 'Substitute') THEN 1 ELSE 0 END) as present_count
             FROM attendance a
             JOIN chapter_meetings cm ON a.meeting_id = cm.id
-            WHERE cm.meeting_type <> 'Daily Status'
+                        JOIN group_members gm_att ON gm_att.user_id = a.user_id AND gm_att.group_id = cm.group_id AND gm_att.membership_status = 'Active'
+                        WHERE cm.meeting_type IN ('Meeting', 'Event', 'SOM')
+                            AND cm.meeting_date >= COALESCE(NULLIF(gm_att.joining_date, '0000-00-00'), gm_att.join_date)
             GROUP BY a.user_id, cm.group_id
         ) att ON u.id = att.user_id AND gm.group_id = att.group_id
         WHERE 1=1
@@ -77,6 +80,8 @@ try {
     foreach ($raw_users as &$u) {
         $grp_id = $u['group_id'];
         $cycle_start = $chapter_cycle_starts[$grp_id] ?? $default_cycle_start;
+        $member_start_date = $u['member_start_date'] ?? $cycle_start;
+        if ($member_start_date > $cycle_start) $cycle_start = $member_start_date;
         
         $u['att_perc'] = ($u['total_mtg'] > 0) ? round(($u['present_count'] / $u['total_mtg']) * 100) : 100;
 

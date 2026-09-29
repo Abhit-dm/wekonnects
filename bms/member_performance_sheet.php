@@ -64,7 +64,9 @@ try {
             SUM(CASE WHEN a.attendance_status LIKE '%Substitute%' THEN 1 ELSE 0 END) as total_subs
         FROM attendance a
         JOIN chapter_meetings cm ON a.meeting_id = cm.id
-        WHERE a.user_id = ? AND cm.group_id = ? AND cm.meeting_type <> 'Daily Status' AND cm.meeting_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+                JOIN group_members gm ON gm.user_id = a.user_id AND gm.group_id = cm.group_id AND gm.membership_status = 'Active'
+                WHERE a.user_id = ? AND cm.group_id = ? AND cm.meeting_type IN ('Meeting', 'Event', 'SOM')
+                    AND cm.meeting_date >= GREATEST(DATE_SUB(CURDATE(), INTERVAL 6 MONTH), COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date))
     ");
     $stmtAtt->execute([$target_user_id, $user['group_id'] ?? 0]);
     $att = $stmtAtt->fetch();

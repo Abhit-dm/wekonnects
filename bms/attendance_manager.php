@@ -62,14 +62,16 @@ try {
         $is_read_only = $is_locked || $is_future_meeting;
 
         $stmtMembers = $pdo->prepare("
-            SELECT u.id as user_id, u.first_name, u.last_name, b.company_name 
+            SELECT u.id as user_id, u.first_name, u.last_name, b.company_name,
+                   COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date) as member_start_date
             FROM group_members gm 
             JOIN users u ON gm.user_id = u.id 
             LEFT JOIN businesses b ON u.id = b.user_id 
             WHERE gm.group_id = ? AND gm.membership_status = 'Active'
+              AND COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date) <= ?
             ORDER BY u.first_name ASC
         ");
-        $stmtMembers->execute([$group_id]);
+        $stmtMembers->execute([$group_id, $current_mtg_date]);
         $members = $stmtMembers->fetchAll();
 
         $stmtAtt = $pdo->prepare("SELECT * FROM attendance WHERE meeting_id = ?");
@@ -83,7 +85,10 @@ try {
             SELECT user_id, SUM(presentation_8_min) as total_pres, SUM(mtp) as total_mtp 
             FROM attendance a 
             JOIN chapter_meetings cm ON a.meeting_id = cm.id 
-            WHERE cm.group_id = ? AND cm.meeting_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR) AND cm.id != ?
+                        JOIN group_members gm ON gm.user_id = a.user_id AND gm.group_id = cm.group_id AND gm.membership_status = 'Active'
+                        WHERE cm.group_id = ? AND cm.meeting_date >= DATE_SUB(CURDATE(), INTERVAL 1 YEAR)
+                            AND cm.meeting_date >= COALESCE(NULLIF(gm.joining_date, '0000-00-00'), gm.join_date)
+                            AND cm.id != ?
             GROUP BY user_id
         ");
         $stmtHistory->execute([$group_id, $active_meeting_id]);
@@ -222,6 +227,13 @@ try {
 
         <form action="actions/save_attendance.php" method="POST" class="<?php if($is_read_only) echo 'locked-mode'; ?>">
             <input type="hidden" name="meeting_id" value="<?php echo $active_meeting_id; ?>">
+
+            <?php if (empty($members)): ?>
+                <div class="alert-banner" style="background:#eff6ff; color:#1e3a8a; border-color:#bfdbfe;">
+                    <i class="fa-solid fa-circle-info" style="font-size:18px;"></i>
+                    <div>No active members had joined this chapter by the selected meeting date.</div>
+                </div>
+            <?php endif; ?>
             
             <?php foreach ($members as $m): 
                 $uid = $m['user_id'];
@@ -273,7 +285,7 @@ try {
                 </div>
             <?php endforeach; ?>
 
-            <?php if (!$is_read_only): ?>
+            <?php if (!$is_read_only && !empty($members)): ?>
                 <?php if ($user_role === 'Coordinator'): ?>
                     <button type="submit" class="btn-save"><i class="fa-solid fa-cloud-arrow-up"></i> Verify & Submit Roster</button>
                 <?php else: ?>
