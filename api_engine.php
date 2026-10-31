@@ -85,6 +85,109 @@ try {
         exit;
     }
 
+        // PUBLIC: REGISTER FOR KARTHIKA VANA MAHOTSAVAM
+        if ($action === 'submit_karthika_registration') {
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                http_response_code(405);
+                header('Allow: POST');
+                echo json_encode(['error' => 'Submit this form using POST.']);
+                exit;
+            }
+
+            if (!empty($_POST['website'])) {
+                echo json_encode(['success' => true, 'message' => 'Registration received.']);
+                exit;
+            }
+
+            $name = trim((string)($_POST['name'] ?? ''));
+            $phone = trim((string)($_POST['phone'] ?? ''));
+            $phone_digits = preg_replace('/\D/', '', $phone);
+            $event_tickets = filter_var($_POST['event_tickets'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 999999]]);
+            $kalyanam_tickets = filter_var($_POST['kalyanam_tickets'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 999999]]);
+
+            if (!preg_match('/^.{1,150}$/us', $name) || preg_match('/[\x00-\x1F\x7F]/', $name)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Enter a valid name (up to 150 characters).']);
+                exit;
+            }
+            if (!preg_match('/^\+?[0-9() -]{7,20}$/D', $phone) || strlen($phone_digits) < 7 || strlen($phone_digits) > 15) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Enter a valid phone number.']);
+                exit;
+            }
+            if ($event_tickets === false || $kalyanam_tickets === false) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Ticket quantities must be whole numbers between 0 and 999999.']);
+                exit;
+            }
+            if ($event_tickets === 0 && $kalyanam_tickets === 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Choose at least one ticket.']);
+                exit;
+            }
+
+            if (!isset($_FILES['payment_screenshot']) || $_FILES['payment_screenshot']['error'] !== UPLOAD_ERR_OK) {
+                http_response_code(400);
+                $upload_error = $_FILES['payment_screenshot']['error'] ?? UPLOAD_ERR_NO_FILE;
+                $message = ($upload_error === UPLOAD_ERR_INI_SIZE || $upload_error === UPLOAD_ERR_FORM_SIZE)
+                    ? 'The screenshot exceeds the server upload limit. Choose a smaller image.'
+                    : 'Upload a valid payment screenshot.';
+                echo json_encode(['error' => $message]);
+                exit;
+            }
+            $screenshot = $_FILES['payment_screenshot'];
+            if (!is_uploaded_file($screenshot['tmp_name']) || $screenshot['size'] > 5 * 1024 * 1024) {
+                http_response_code(400);
+                echo json_encode(['error' => 'The screenshot must be a valid image no larger than 5 MB.']);
+                exit;
+            }
+            try {
+                if (!class_exists('finfo')) {
+                    throw new RuntimeException('The PHP fileinfo extension is required for payment screenshot uploads.');
+                }
+                $file_info = new finfo(FILEINFO_MIME_TYPE);
+                $mime_type = $file_info->file($screenshot['tmp_name']);
+                $allowed_images = ['image/jpeg' => '.jpg', 'image/png' => '.png', 'image/webp' => '.webp'];
+                if (!isset($allowed_images[$mime_type])) {
+                    http_response_code(400);
+                    echo json_encode(['error' => 'Upload a JPEG, PNG, or WebP screenshot.']);
+                    exit;
+                }
+
+                require_once __DIR__ . '/bms/includes/karthika_event.php';
+                ensure_karthika_registrations_table($pdo);
+                $upload_directory = karthika_private_upload_directory();
+                $filename = bin2hex(random_bytes(16)) . $allowed_images[$mime_type];
+                $upload_path = $upload_directory . DIRECTORY_SEPARATOR . $filename;
+                $total_amount = ($event_tickets * 499) + ($kalyanam_tickets * 999);
+
+                if (!move_uploaded_file($screenshot['tmp_name'], $upload_path)) {
+                    throw new RuntimeException('Unable to store the uploaded payment screenshot.');
+                }
+
+                $stmt = $pdo->prepare("
+                    INSERT INTO karthika_registrations
+                        (full_name, phone, event_ticket_count, kalyanam_couple_count, total_amount, payment_screenshot)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ");
+                $stmt->execute([$name, $phone, $event_tickets, $kalyanam_tickets, $total_amount, $filename]);
+                http_response_code(201);
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Your registration has been received. Payment verification is pending.'
+                ]);
+                exit;
+            } catch (Exception $e) {
+                if (isset($upload_path) && is_file($upload_path)) {
+                    unlink($upload_path);
+                }
+                error_log('Karthika registration could not be saved: ' . $e->getMessage());
+                http_response_code(500);
+                echo json_encode(['error' => 'We could not save your registration right now. Please try again later.']);
+                exit;
+            }
+        }
+
     // 4. NEW: FETCH BLOOD DONORS
     if ($action === 'get_blood_donors') {
         $blood_group = isset($_GET['group']) ? $_GET['group'] : '';

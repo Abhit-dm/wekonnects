@@ -98,6 +98,7 @@ try {
     <h2>WE <span>KONNECTS</span> | Employee Portal</h2>
     <div>
         <span style="margin-right: 15px; font-size: 13px;"><i class="fa-solid fa-user-tie" style="color:var(--brand-orange);"></i> Global Visitor Manager</span>
+        <a href="karthika_registrations.php" style="margin-right: 15px; color: white; font-size: 13px; font-weight: 700; text-decoration: none;"><i class="fa-solid fa-ticket" style="color:var(--brand-orange);"></i> Festival Registrations</a>
         <a href="actions/logout.php" class="btn-logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
     </div>
 </div>

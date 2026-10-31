@@ -100,6 +100,14 @@ $system_role = $_SESSION['system_role'] ?? 'MEMBER';
         <hr class="sidebar-divider">
     <?php endif; ?>
 
+    <?php if ($system_role === 'SUPER_ADMIN' || strpos($system_role, 'EMP_') === 0): ?>
+        <div class="sidebar-heading"><i class="fa-solid fa-calendar-days"></i> Events</div>
+        <a href="karthika_registrations.php" class="nav-item <?php echo ($current_page == 'karthika_registrations.php') ? 'active' : ''; ?>">
+            <i class="fa-solid fa-ticket"></i> Festival Registrations
+        </a>
+        <hr class="sidebar-divider">
+    <?php endif; ?>
+
     <!-- 3. STANDARD USER AREA -->
     <div class="sidebar-heading">My Account</div>
     <a href="index.php" class="nav-item <?php echo ($current_page == 'index.php') ? 'active' : ''; ?>">
