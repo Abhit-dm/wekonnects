@@ -9,6 +9,10 @@ if (empty($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true || ($role !
     exit;
 }
 
+if (empty($_SESSION['csrf_token'])) {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
 require_once 'includes/karthika_event.php';
 
 $search = trim((string)($_GET['search'] ?? ''));
@@ -105,6 +109,13 @@ $page_count = isset($filtered_count) ? max(1, (int)ceil($filtered_count / $page_
         .phone { color: #2563eb; text-decoration: none; font-weight: 600; white-space: nowrap; }
         .proof { display: inline-flex; gap: 7px; align-items: center; border-radius: 7px; padding: 8px 10px; background: #eff6ff; color: #1d4ed8; font-weight: 700; text-decoration: none; white-space: nowrap; }
         .status { display: inline-block; border-radius: 20px; padding: 5px 9px; background: #fff7ed; color: #c2410c; font-size: 11px; font-weight: 800; }
+        .status-confirmed { background: #dcfce7; color: #166534; }
+        .proof-preview { display: block; width: 72px; height: 54px; margin-bottom: 7px; border: 1px solid var(--border); border-radius: 6px; object-fit: cover; }
+        .booking-action { display: inline-block; margin-top: 7px; border: 0; border-radius: 7px; padding: 8px 10px; background: #166534; color: white; font: inherit; font-size: 12px; font-weight: 700; text-decoration: none; cursor: pointer; white-space: nowrap; }
+        .booking-action.whatsapp { background: #15803d; }
+        .notice { margin-bottom: 18px; border-radius: 9px; padding: 12px 15px; font-size: 14px; }
+        .notice.success { background: #dcfce7; color: #166534; }
+        .notice.error { background: #fef2f2; color: #b91c1c; }
         .empty, .error { padding: 32px; text-align: center; color: var(--muted); }
         .error { margin-bottom: 20px; border-radius: 10px; background: #fef2f2; color: #b91c1c; }
         .pagination { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 18px; color: var(--muted); font-size: 13px; }
@@ -136,6 +147,13 @@ $page_count = isset($filtered_count) ? max(1, (int)ceil($filtered_count / $page_
         <button class="print-button" type="button" onclick="window.print()"><i class="fa-solid fa-print"></i> Print / Save PDF</button>
     </div>
 
+    <?php if (!empty($_SESSION['success_msg'])): ?>
+        <div class="notice success"><?php echo htmlspecialchars($_SESSION['success_msg'], ENT_QUOTES, 'UTF-8'); unset($_SESSION['success_msg']); ?></div>
+    <?php endif; ?>
+    <?php if (!empty($_SESSION['error_msg'])): ?>
+        <div class="notice error"><?php echo htmlspecialchars($_SESSION['error_msg'], ENT_QUOTES, 'UTF-8'); unset($_SESSION['error_msg']); ?></div>
+    <?php endif; ?>
+
     <?php if ($error_message !== ''): ?>
         <div class="error"><?php echo htmlspecialchars($error_message, ENT_QUOTES, 'UTF-8'); ?></div>
     <?php else: ?>
@@ -160,7 +178,7 @@ $page_count = isset($filtered_count) ? max(1, (int)ceil($filtered_count / $page_
                         <th>Vratam couples</th>
                         <th>Total</th>
                         <th>Other interests</th>
-                        <th>Payment status</th>
+                        <th>Payment status & action</th>
                         <th>Payment screenshot</th>
                     </tr>
                 </thead>
@@ -184,9 +202,45 @@ $page_count = isset($filtered_count) ? max(1, (int)ceil($filtered_count / $page_
                                         <?php if ($registration['interest_details'] !== ''): ?><br><span style="color:#64748b;"><?php echo nl2br(htmlspecialchars($registration['interest_details'], ENT_QUOTES, 'UTF-8')); ?></span><?php endif; ?>
                                     <?php else: ?>—<?php endif; ?>
                                 </td>
-                                <td><span class="status"><?php echo htmlspecialchars($registration['payment_status'], ENT_QUOTES, 'UTF-8'); ?></span></td>
+                                <td>
+                                    <span class="status <?php echo $registration['payment_status'] === 'Confirmed' ? 'status-confirmed' : ''; ?>"><?php echo htmlspecialchars($registration['payment_status'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                    <?php if ($registration['payment_status'] === 'Pending' && $registration['payment_screenshot'] !== ''): ?>
+                                        <form method="post" action="actions/confirm_karthika_payment.php" onsubmit="return confirm('Confirm that you manually verified this payment?');">
+                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8'); ?>">
+                                            <input type="hidden" name="registration_id" value="<?php echo (int)$registration['id']; ?>">
+                                            <input type="hidden" name="page" value="<?php echo (int)$page; ?>">
+                                            <input type="hidden" name="search" value="<?php echo htmlspecialchars($search, ENT_QUOTES, 'UTF-8'); ?>">
+                                            <button class="booking-action" type="submit">Confirm payment</button>
+                                        </form>
+                                    <?php elseif ($registration['payment_status'] === 'Confirmed'): ?>
+                                        <?php
+                                        $whatsapp_number = preg_replace('/[^0-9]/', '', $registration['phone']);
+                                        if (substr($whatsapp_number, 0, 2) === '00') {
+                                            $whatsapp_number = substr($whatsapp_number, 2);
+                                        }
+                                        if (strlen($whatsapp_number) === 10) {
+                                            $whatsapp_number = '91' . $whatsapp_number;
+                                        } elseif (strlen($whatsapp_number) === 11 && $whatsapp_number[0] === '0') {
+                                            $whatsapp_number = '91' . substr($whatsapp_number, 1);
+                                        }
+                                        $confirmation_message = sprintf(
+                                            'Hi %s, we have verified your payment of ₹%s and confirmed your Karthika Festival booking for 22 November 2026. Event tickets: %d; Satyanarayana Vratam couples: %d. Thank you, WE KONNECTS.',
+                                            $registration['full_name'],
+                                            number_format((int)$registration['total_amount']),
+                                            (int)$registration['event_ticket_count'],
+                                            (int)$registration['satyanarayana_vratam_couple_count']
+                                        );
+                                        ?>
+                                        <?php if (strlen($whatsapp_number) >= 10 && strlen($whatsapp_number) <= 15): ?>
+                                            <a class="booking-action whatsapp" href="https://wa.me/<?php echo htmlspecialchars($whatsapp_number, ENT_QUOTES, 'UTF-8'); ?>?text=<?php echo rawurlencode($confirmation_message); ?>" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> Send WhatsApp</a>
+                                        <?php else: ?>
+                                            <div style="margin-top:7px;color:#64748b;font-size:12px;">WhatsApp number unavailable</div>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </td>
                                 <td>
                                     <?php if ($registration['payment_screenshot'] !== ''): ?>
+                                        <a href="actions/karthika_payment_image.php?id=<?php echo (int)$registration['id']; ?>" target="_blank" rel="noopener"><img class="proof-preview" src="actions/karthika_payment_image.php?id=<?php echo (int)$registration['id']; ?>" alt="Payment proof for <?php echo htmlspecialchars($registration['full_name'], ENT_QUOTES, 'UTF-8'); ?>" loading="lazy"></a>
                                         <a class="proof" href="actions/karthika_payment_image.php?id=<?php echo (int)$registration['id']; ?>" target="_blank" rel="noopener"><i class="fa-regular fa-image"></i> View proof</a>
                                     <?php else: ?>Not uploaded<?php endif; ?>
                                 </td>
