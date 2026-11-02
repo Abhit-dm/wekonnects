@@ -74,14 +74,20 @@ try {
         exit('Payment proof not found.');
     }
 
-    $path = karthika_private_upload_directory() . DIRECTORY_SEPARATOR . $filename;
-    if (!is_file($path)) {
-        $legacy_path = karthika_legacy_upload_directory() . DIRECTORY_SEPARATOR . $filename;
-        if (is_file($legacy_path)) {
-            $path = $legacy_path;
+    $path = '';
+    $upload_directories = [
+        karthika_private_upload_directory(),
+        karthika_previous_upload_directory(),
+        karthika_legacy_upload_directory()
+    ];
+    foreach ($upload_directories as $upload_directory) {
+        $candidate = $upload_directory . DIRECTORY_SEPARATOR . $filename;
+        if (is_file($candidate)) {
+            $path = $candidate;
+            break;
         }
     }
-    if (!is_file($path) || !class_exists('finfo')) {
+    if ($path === '' || !class_exists('finfo')) {
         http_response_code(404);
         exit('Payment proof file not found.');
     }

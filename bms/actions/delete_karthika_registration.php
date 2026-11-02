@@ -55,6 +55,7 @@ try {
             if ($filename !== '' && preg_match('/^[a-f0-9]{32}\.(jpg|png|webp)$/', $filename)) {
                 $paths = [
                     karthika_private_upload_directory() . DIRECTORY_SEPARATOR . $filename,
+                    karthika_previous_upload_directory() . DIRECTORY_SEPARATOR . $filename,
                     karthika_legacy_upload_directory() . DIRECTORY_SEPARATOR . $filename
                 ];
                 foreach ($paths as $path) {

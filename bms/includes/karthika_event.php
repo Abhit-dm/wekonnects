@@ -58,14 +58,14 @@ function ensure_karthika_registrations_table(PDO $pdo)
 
 function karthika_private_upload_directory()
 {
-    $directory = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'karthika-private';
+    $directory = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'karthika-private';
     if (!is_dir($directory) && !mkdir($directory, 0750, true) && !is_dir($directory)) {
         throw new RuntimeException('Unable to create the private payment upload directory.');
     }
 
     $access_rules = "<IfModule mod_authz_core.c>\n    Require all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\n    Order allow,deny\n    Deny from all\n</IfModule>\nOptions -Indexes\n";
     $access_file = $directory . DIRECTORY_SEPARATOR . '.htaccess';
-    if (file_put_contents($access_file, $access_rules, LOCK_EX) === false) {
+    if (!is_file($access_file) && file_put_contents($access_file, $access_rules, LOCK_EX) === false) {
         throw new RuntimeException('Unable to protect the payment upload directory from direct web access.');
     }
 
@@ -75,4 +75,9 @@ function karthika_private_upload_directory()
 function karthika_legacy_upload_directory()
 {
     return dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'wekonnects_private_uploads' . DIRECTORY_SEPARATOR . 'karthika';
+}
+
+function karthika_previous_upload_directory()
+{
+    return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'karthika-private';
 }

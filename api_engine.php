@@ -173,25 +173,59 @@ try {
                         echo json_encode(['error' => 'The screenshot must be a valid image no larger than 5 MB.']);
                         exit;
                     }
+                    if (!function_exists('imagecreatefromstring') || !function_exists('imagewebp')) {
+                        http_response_code(500);
+                        echo json_encode(['error' => 'The server cannot convert payment screenshots to WebP. Please contact support.']);
+                        exit;
+                    }
                     if (!class_exists('finfo')) {
                         throw new RuntimeException('The PHP fileinfo extension is required for payment screenshot uploads.');
                     }
                     $file_info = new finfo(FILEINFO_MIME_TYPE);
                     $mime_type = $file_info->file($screenshot['tmp_name']);
-                    $allowed_images = ['image/jpeg' => '.jpg', 'image/png' => '.png', 'image/webp' => '.webp'];
-                    if (!isset($allowed_images[$mime_type])) {
+                    if (!in_array($mime_type, ['image/jpeg', 'image/png', 'image/webp'], true)) {
                         http_response_code(400);
                         echo json_encode(['error' => 'Upload a JPEG, PNG, or WebP screenshot.']);
                         exit;
                     }
 
-                    require_once __DIR__ . '/bms/includes/karthika_event.php';
-                    $filename = bin2hex(random_bytes(16)) . $allowed_images[$mime_type];
-                    $upload_path = karthika_private_upload_directory() . DIRECTORY_SEPARATOR . $filename;
-                    if (!move_uploaded_file($screenshot['tmp_name'], $upload_path)) {
-                        throw new RuntimeException('Unable to store the uploaded payment screenshot.');
+                    $image_info = getimagesize($screenshot['tmp_name']);
+                    if ($image_info === false
+                        || $image_info[0] < 1
+                        || $image_info[1] < 1
+                        || $image_info[0] > 10000
+                        || $image_info[1] > 10000
+                        || $image_info[0] * $image_info[1] > 20000000) {
+                        http_response_code(400);
+                        echo json_encode(['error' => 'The screenshot dimensions are invalid or too large.']);
+                        exit;
                     }
-                    $screenshot_mime = $mime_type;
+                    $image_bytes = file_get_contents($screenshot['tmp_name']);
+                    if ($image_bytes === false || strlen($image_bytes) !== (int)$screenshot['size']) {
+                        throw new RuntimeException('Unable to read the uploaded payment screenshot.');
+                    }
+                    $source_image = imagecreatefromstring($image_bytes);
+                    unset($image_bytes);
+                    if ($source_image === false) {
+                        http_response_code(400);
+                        echo json_encode(['error' => 'The uploaded screenshot is not a valid image.']);
+                        exit;
+                    }
+                    imagealphablending($source_image, false);
+                    imagesavealpha($source_image, true);
+
+                    require_once __DIR__ . '/bms/includes/karthika_event.php';
+                    $filename = bin2hex(random_bytes(16)) . '.webp';
+                    $upload_path = karthika_private_upload_directory() . DIRECTORY_SEPARATOR . $filename;
+                    $converted = imagewebp($source_image, $upload_path, 82);
+                    imagedestroy($source_image);
+                    if (!$converted || !is_file($upload_path) || filesize($upload_path) === 0) {
+                        throw new RuntimeException('Unable to convert and store the payment screenshot as WebP.');
+                    }
+                    if ($file_info->file($upload_path) !== 'image/webp') {
+                        throw new RuntimeException('The converted payment screenshot is not a valid WebP image.');
+                    }
+                    $screenshot_mime = 'image/webp';
                 }
 
                 require_once __DIR__ . '/bms/includes/karthika_event.php';
