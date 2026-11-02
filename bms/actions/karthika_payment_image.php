@@ -18,6 +18,7 @@ if ($registration_id === false || $registration_id === null) {
 }
 
 $registration = null;
+$image_data_url = '';
 $error_message = '';
 try {
     ensure_karthika_registrations_table($pdo);
@@ -27,6 +28,7 @@ try {
         $error_message = 'This registration could not be found.';
     } else {
         $registration = $proof['registration'];
+        $image_data_url = 'data:' . $proof['mime_type'] . ';base64,' . base64_encode($proof['image_bytes']);
     }
 } catch (Throwable $e) {
     error_log('Karthika payment proof page could not be loaded: ' . $e->getMessage());
@@ -34,8 +36,6 @@ try {
     $error_message = 'Unable to load this payment proof. Check the server error log for details.';
 }
 
-$image_data_url = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? ''), '/\\')
-    . '/karthika_payment_image_data.php?id=' . (int)$registration_id;
 $escape = static function ($value) {
     return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8');
 };
