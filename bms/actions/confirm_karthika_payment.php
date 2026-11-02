@@ -9,9 +9,14 @@ if (empty($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true || ($role !
 }
 
 $search = substr(trim((string)($_POST['search'] ?? '')), 0, 100);
+$pipeline = (string)($_POST['pipeline'] ?? 'all');
+$valid_pipelines = ['all', 'payment_pending', 'payment_confirmed', 'whatsapp_pending', 'whatsapp_sent', 'location_pending', 'location_shared'];
+if (!in_array($pipeline, $valid_pipelines, true)) {
+    $pipeline = 'all';
+}
 $page = filter_input(INPUT_POST, 'page', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 $page = (!$page || $page > 1000000) ? 1 : $page;
-$redirect = '../karthika_registrations.php?' . http_build_query(['search' => $search, 'page' => $page]);
+$redirect = '../karthika_registrations.php?' . http_build_query(['search' => $search, 'pipeline' => $pipeline, 'page' => $page]);
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST'
     || empty($_SESSION['csrf_token'])
@@ -42,7 +47,7 @@ try {
     if ($stmt->rowCount() !== 1) {
         $_SESSION['error_msg'] = 'Payment was not confirmed. Check that the registration is still pending and has a payment proof.';
     } else {
-        $_SESSION['success_msg'] = 'Payment confirmed. Review the booking details, then use Send WhatsApp to open the prefilled confirmation message.';
+        $_SESSION['success_msg'] = 'Payment confirmed. Open the styled WhatsApp message, send it to the customer, then mark it as sent to update the CRM.';
     }
 } catch (Throwable $e) {
     error_log('Karthika payment could not be confirmed: ' . $e->getMessage());

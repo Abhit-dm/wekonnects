@@ -29,9 +29,13 @@ try {
     }
 
     $path = karthika_private_upload_directory() . DIRECTORY_SEPARATOR . $filename;
-    if (!is_file($path) || !class_exists('finfo')) {
+    if (!is_file($path)) {
+        error_log('Karthika payment proof file is missing for registration ' . (int)$registration_id . '.');
         http_response_code(404);
         exit('Payment proof not found.');
+    }
+    if (!class_exists('finfo')) {
+        throw new RuntimeException('The PHP fileinfo extension is required to serve payment proofs.');
     }
 
     $file_info = new finfo(FILEINFO_MIME_TYPE);
@@ -43,11 +47,11 @@ try {
 
     header('Content-Type: ' . $mime_type);
     header('Content-Length: ' . filesize($path));
-    header('Content-Disposition: inline; filename="payment-proof-' . (int)$registration_id . '"');
+    header('Content-Disposition: inline; filename="payment-proof-' . (int)$registration_id . '.' . strtolower(pathinfo($filename, PATHINFO_EXTENSION)) . '"');
     header('Cache-Control: private, no-store, max-age=0');
     header('X-Content-Type-Options: nosniff');
     readfile($path);
-} catch (Exception $e) {
+} catch (Throwable $e) {
     error_log('Karthika payment proof could not be served: ' . $e->getMessage());
     http_response_code(500);
     exit('Unable to load payment proof.');
