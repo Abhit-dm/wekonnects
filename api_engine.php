@@ -99,11 +99,21 @@ try {
                 exit;
             }
 
-            $name = trim((string)($_POST['name'] ?? ''));
-            $phone = trim((string)($_POST['phone'] ?? ''));
+            $name = isset($_POST['name']) && is_string($_POST['name']) ? trim($_POST['name']) : '';
+            $phone = isset($_POST['phone']) && is_string($_POST['phone']) ? trim($_POST['phone']) : '';
             $phone_digits = preg_replace('/\D/', '', $phone);
-            $event_tickets = filter_var($_POST['event_tickets'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 999999]]);
-            $kalyanam_tickets = filter_var($_POST['kalyanam_tickets'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 999999]]);
+            $event_tickets = isset($_POST['event_tickets']) && !is_array($_POST['event_tickets'])
+                ? filter_var($_POST['event_tickets'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 999999]])
+                : false;
+            $vratam_tickets = isset($_POST['vratam_tickets']) && !is_array($_POST['vratam_tickets'])
+                ? filter_var($_POST['vratam_tickets'], FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 999999]])
+                : false;
+            $interest_stalls = isset($_POST['interest_stalls']) && $_POST['interest_stalls'] === '1' ? 1 : 0;
+            $interest_advertisement = isset($_POST['interest_advertisement']) && $_POST['interest_advertisement'] === '1' ? 1 : 0;
+            $interest_sponsorship = isset($_POST['interest_sponsorship']) && $_POST['interest_sponsorship'] === '1' ? 1 : 0;
+            $interest_details = isset($_POST['interest_details']) && is_string($_POST['interest_details'])
+                ? trim($_POST['interest_details'])
+                : '';
 
             if (!preg_match('/^.{1,150}$/us', $name) || preg_match('/[\x00-\x1F\x7F]/', $name)) {
                 http_response_code(400);
@@ -115,70 +125,107 @@ try {
                 echo json_encode(['error' => 'Enter a valid phone number.']);
                 exit;
             }
-            if ($event_tickets === false || $kalyanam_tickets === false) {
+            if ($event_tickets === false || $vratam_tickets === false) {
                 http_response_code(400);
                 echo json_encode(['error' => 'Ticket quantities must be whole numbers between 0 and 999999.']);
                 exit;
             }
-            if ($event_tickets === 0 && $kalyanam_tickets === 0) {
+            if (preg_match('/^.{0,500}$/us', $interest_details) !== 1 || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', $interest_details)) {
                 http_response_code(400);
-                echo json_encode(['error' => 'Choose at least one ticket.']);
+                echo json_encode(['error' => 'Interest details must be 500 characters or fewer.']);
                 exit;
             }
 
-            if (!isset($_FILES['payment_screenshot']) || $_FILES['payment_screenshot']['error'] !== UPLOAD_ERR_OK) {
+            $has_interest = $interest_stalls || $interest_advertisement || $interest_sponsorship;
+            if ($event_tickets === 0 && $vratam_tickets === 0 && !$has_interest) {
                 http_response_code(400);
-                $upload_error = $_FILES['payment_screenshot']['error'] ?? UPLOAD_ERR_NO_FILE;
+                echo json_encode(['error' => 'Choose at least one ticket or a stall, advertisement, or sponsorship enquiry.']);
+                exit;
+            }
+
+            $total_amount = ($event_tickets * 499) + ($vratam_tickets * 999);
+            $screenshot = $_FILES['payment_screenshot'] ?? null;
+            $upload_error = is_array($screenshot) && isset($screenshot['error'])
+                ? (int)$screenshot['error']
+                : UPLOAD_ERR_NO_FILE;
+            $has_screenshot = $upload_error === UPLOAD_ERR_OK;
+            if ($total_amount > 0 && !$has_screenshot) {
+                http_response_code(400);
                 $message = ($upload_error === UPLOAD_ERR_INI_SIZE || $upload_error === UPLOAD_ERR_FORM_SIZE)
                     ? 'The screenshot exceeds the server upload limit. Choose a smaller image.'
-                    : 'Upload a valid payment screenshot.';
+                    : 'Upload your payment screenshot to complete ticket registration.';
                 echo json_encode(['error' => $message]);
                 exit;
             }
-            $screenshot = $_FILES['payment_screenshot'];
-            if (!is_uploaded_file($screenshot['tmp_name']) || $screenshot['size'] > 5 * 1024 * 1024) {
+            if (!$has_screenshot && $upload_error !== UPLOAD_ERR_NO_FILE) {
                 http_response_code(400);
-                echo json_encode(['error' => 'The screenshot must be a valid image no larger than 5 MB.']);
+                echo json_encode(['error' => 'The payment screenshot could not be uploaded. Please try again.']);
                 exit;
             }
+
             try {
-                if (!class_exists('finfo')) {
-                    throw new RuntimeException('The PHP fileinfo extension is required for payment screenshot uploads.');
-                }
-                $file_info = new finfo(FILEINFO_MIME_TYPE);
-                $mime_type = $file_info->file($screenshot['tmp_name']);
-                $allowed_images = ['image/jpeg' => '.jpg', 'image/png' => '.png', 'image/webp' => '.webp'];
-                if (!isset($allowed_images[$mime_type])) {
-                    http_response_code(400);
-                    echo json_encode(['error' => 'Upload a JPEG, PNG, or WebP screenshot.']);
-                    exit;
+                $filename = '';
+                $upload_path = null;
+                if ($has_screenshot) {
+                    if (!is_uploaded_file($screenshot['tmp_name']) || $screenshot['size'] > 5 * 1024 * 1024) {
+                        http_response_code(400);
+                        echo json_encode(['error' => 'The screenshot must be a valid image no larger than 5 MB.']);
+                        exit;
+                    }
+                    if (!class_exists('finfo')) {
+                        throw new RuntimeException('The PHP fileinfo extension is required for payment screenshot uploads.');
+                    }
+                    $file_info = new finfo(FILEINFO_MIME_TYPE);
+                    $mime_type = $file_info->file($screenshot['tmp_name']);
+                    $allowed_images = ['image/jpeg' => '.jpg', 'image/png' => '.png', 'image/webp' => '.webp'];
+                    if (!isset($allowed_images[$mime_type])) {
+                        http_response_code(400);
+                        echo json_encode(['error' => 'Upload a JPEG, PNG, or WebP screenshot.']);
+                        exit;
+                    }
+
+                    require_once __DIR__ . '/bms/includes/karthika_event.php';
+                    $upload_directory = karthika_private_upload_directory();
+                    $filename = bin2hex(random_bytes(16)) . $allowed_images[$mime_type];
+                    $upload_path = $upload_directory . DIRECTORY_SEPARATOR . $filename;
+                    if (!move_uploaded_file($screenshot['tmp_name'], $upload_path)) {
+                        throw new RuntimeException('Unable to store the uploaded payment screenshot.');
+                    }
                 }
 
                 require_once __DIR__ . '/bms/includes/karthika_event.php';
                 ensure_karthika_registrations_table($pdo);
-                $upload_directory = karthika_private_upload_directory();
-                $filename = bin2hex(random_bytes(16)) . $allowed_images[$mime_type];
-                $upload_path = $upload_directory . DIRECTORY_SEPARATOR . $filename;
-                $total_amount = ($event_tickets * 499) + ($kalyanam_tickets * 999);
-
-                if (!move_uploaded_file($screenshot['tmp_name'], $upload_path)) {
-                    throw new RuntimeException('Unable to store the uploaded payment screenshot.');
-                }
 
                 $stmt = $pdo->prepare("
                     INSERT INTO karthika_registrations
-                        (full_name, phone, event_ticket_count, kalyanam_couple_count, total_amount, payment_screenshot)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                        (full_name, phone, event_ticket_count, satyanarayana_vratam_couple_count,
+                         total_amount, payment_screenshot, payment_status, interest_stalls,
+                         interest_advertisement, interest_sponsorship, interest_details)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ");
-                $stmt->execute([$name, $phone, $event_tickets, $kalyanam_tickets, $total_amount, $filename]);
+                $stmt->execute([
+                    $name,
+                    $phone,
+                    $event_tickets,
+                    $vratam_tickets,
+                    $total_amount,
+                    $filename,
+                    $total_amount > 0 ? 'Pending' : 'Inquiry',
+                    $interest_stalls,
+                    $interest_advertisement,
+                    $interest_sponsorship,
+                    $interest_details
+                ]);
                 http_response_code(201);
                 echo json_encode([
                     'success' => true,
-                    'message' => 'Your registration has been received. Payment verification is pending.'
+                    'message' => $total_amount > 0
+                        ? 'Your registration has been received. Payment verification is pending.'
+                        : 'Thank you. Your festival interest has been sent to the team.'
                 ]);
                 exit;
             } catch (Exception $e) {
-                if (isset($upload_path) && is_file($upload_path)) {
+                if (isset($upload_path) && $upload_path && is_file($upload_path)) {
                     unlink($upload_path);
                 }
                 error_log('Karthika registration could not be saved: ' . $e->getMessage());

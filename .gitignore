@@ -4,4 +4,6 @@
 /output/
 /uploads/1.mp4
 *.sql
+!bms/migrations/
+!bms/migrations/*.sql
 *.log

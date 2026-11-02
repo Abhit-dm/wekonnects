@@ -43,8 +43,9 @@ try {
     $filtered_count = (int)$stmtCount->fetchColumn();
 
     $stmtRows = $pdo->prepare("
-        SELECT id, full_name, phone, event_ticket_count, kalyanam_couple_count,
-               total_amount, payment_status, created_at
+        SELECT id, full_name, phone, event_ticket_count, satyanarayana_vratam_couple_count,
+               total_amount, payment_screenshot, payment_status, interest_stalls,
+               interest_advertisement, interest_sponsorship, interest_details, created_at
         FROM karthika_registrations
         $where
         ORDER BY created_at DESC, id DESC
@@ -52,6 +53,19 @@ try {
     ");
     $stmtRows->execute($params);
     $registrations = $stmtRows->fetchAll();
+    foreach ($registrations as &$registration) {
+        $registration['interests'] = [];
+        if ((int)$registration['interest_stalls'] === 1) {
+            $registration['interests'][] = 'Stall';
+        }
+        if ((int)$registration['interest_advertisement'] === 1) {
+            $registration['interests'][] = 'Advertisement';
+        }
+        if ((int)$registration['interest_sponsorship'] === 1) {
+            $registration['interests'][] = 'Sponsorship';
+        }
+    }
+    unset($registration);
 } catch (Exception $e) {
     error_log('Karthika registrations could not be loaded: ' . $e->getMessage());
     $error_message = 'Registration data is temporarily unavailable. Please try again later.';
@@ -84,7 +98,7 @@ $page_count = isset($filtered_count) ? max(1, (int)ceil($filtered_count / $page_
         .filter input { flex: 1; min-width: 0; border: 1px solid var(--border); border-radius: 8px; padding: 12px; font: inherit; }
         .filter button, .filter a { border: 0; border-radius: 8px; padding: 12px 16px; background: var(--blue); color: white; font-weight: 700; text-decoration: none; cursor: pointer; }
         .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; background: white; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; text-align: left; }
+        table { width: 100%; border-collapse: collapse; min-width: 1180px; text-align: left; }
         th, td { padding: 14px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 13px; }
         th { background: #f1f5f9; color: var(--muted); font-size: 11px; text-transform: uppercase; white-space: nowrap; }
         tr:last-child td { border-bottom: 0; }
@@ -143,15 +157,16 @@ $page_count = isset($filtered_count) ? max(1, (int)ceil($filtered_count / $page_
                         <th>Submitted</th>
                         <th>Name & phone</th>
                         <th>Event tickets</th>
-                        <th>Kalyanam couples</th>
+                        <th>Vratam couples</th>
                         <th>Total</th>
+                        <th>Other interests</th>
                         <th>Payment status</th>
                         <th>Payment screenshot</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (empty($registrations)): ?>
-                        <tr><td class="empty" colspan="7">No registrations found.</td></tr>
+                        <tr><td class="empty" colspan="8">No registrations found.</td></tr>
                     <?php else: ?>
                         <?php foreach ($registrations as $registration): ?>
                             <tr>
@@ -161,10 +176,20 @@ $page_count = isset($filtered_count) ? max(1, (int)ceil($filtered_count / $page_
                                     <a class="phone" href="tel:<?php echo htmlspecialchars($registration['phone'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($registration['phone'], ENT_QUOTES, 'UTF-8'); ?></a>
                                 </td>
                                 <td><?php echo number_format((int)$registration['event_ticket_count']); ?> × ₹499</td>
-                                <td><?php echo number_format((int)$registration['kalyanam_couple_count']); ?> × ₹999</td>
+                                <td><?php echo number_format((int)$registration['satyanarayana_vratam_couple_count']); ?> × ₹999</td>
                                 <td><strong>₹<?php echo number_format((int)$registration['total_amount']); ?></strong></td>
+                                <td>
+                                    <?php if (!empty($registration['interests'])): ?>
+                                        <strong><?php echo htmlspecialchars(implode(', ', $registration['interests']), ENT_QUOTES, 'UTF-8'); ?></strong>
+                                        <?php if ($registration['interest_details'] !== ''): ?><br><span style="color:#64748b;"><?php echo nl2br(htmlspecialchars($registration['interest_details'], ENT_QUOTES, 'UTF-8')); ?></span><?php endif; ?>
+                                    <?php else: ?>—<?php endif; ?>
+                                </td>
                                 <td><span class="status"><?php echo htmlspecialchars($registration['payment_status'], ENT_QUOTES, 'UTF-8'); ?></span></td>
-                                <td><a class="proof" href="actions/karthika_payment_image.php?id=<?php echo (int)$registration['id']; ?>" target="_blank" rel="noopener"><i class="fa-regular fa-image"></i> View proof</a></td>
+                                <td>
+                                    <?php if ($registration['payment_screenshot'] !== ''): ?>
+                                        <a class="proof" href="actions/karthika_payment_image.php?id=<?php echo (int)$registration['id']; ?>" target="_blank" rel="noopener"><i class="fa-regular fa-image"></i> View proof</a>
+                                    <?php else: ?>Not uploaded<?php endif; ?>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>

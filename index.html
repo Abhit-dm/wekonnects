@@ -19,6 +19,15 @@
         .pulse-logo { animation: pulse-bold 1.5s infinite; filter: drop-shadow(0px 10px 15px rgba(255, 107, 0, 0.3)); }
         @keyframes pulse-bold { 0% { transform: scale(0.95); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(0.95); opacity: 0.8; } }
         .swiper-pagination-bullet-active { background-color: #FF6B00 !important; }
+        @keyframes festival-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes festival-glow { 0%, 100% { box-shadow: 0 0 24px rgba(255, 184, 77, 0.18); } 50% { box-shadow: 0 0 42px rgba(255, 184, 77, 0.38); } }
+        .festival-float { animation: festival-float 5s ease-in-out infinite; }
+        .festival-glow { animation: festival-glow 4s ease-in-out infinite; }
+        .festival-choice { transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease; }
+        .festival-choice:hover { transform: translateY(-3px); border-color: #ff6b00; box-shadow: 0 12px 28px rgba(15, 32, 70, 0.1); }
+        @media (prefers-reduced-motion: reduce) {
+            #festival *, #festival *::before, #festival *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+        }
     </style>
 </head>
 <body class="bg-brandWhite text-brandBlue font-sans antialiased overflow-x-hidden flex flex-col min-h-screen">
@@ -49,94 +58,152 @@
     </div>
 
     <!-- KARTHIKA VANA MAHOTSAVAM REGISTRATION -->
-    <section id="festival" class="py-16 md:py-24 bg-gradient-to-br from-amber-50 via-white to-orange-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid lg:grid-cols-[1fr_1.15fr] gap-10 items-start">
-                <div data-aos="fade-up">
-                    <span class="inline-flex items-center gap-2 rounded-full bg-orange-100 px-4 py-2 text-sm font-bold uppercase tracking-wide text-brandOrange">
-                        <span aria-hidden="true">✦</span> Upcoming Festival
-                    </span>
-                    <h2 class="mt-5 text-4xl md:text-5xl font-extrabold leading-tight text-brandBlue">Karthika Vana <span class="text-brandOrange">Mahotsavam</span></h2>
-                    <p class="mt-4 text-lg leading-relaxed text-gray-600">Join us for a special day of celebration at Kolanukonda.</p>
-                    <div class="mt-7 space-y-4">
-                        <div class="flex items-center gap-4 rounded-2xl border border-orange-100 bg-white p-4 shadow-sm">
-                            <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-xl" aria-hidden="true">📅</span>
-                            <div><p class="text-xs font-bold uppercase tracking-wide text-gray-500">Date</p><p class="font-bold text-brandBlue">22 November 2026</p></div>
-                        </div>
-                        <div class="flex items-center gap-4 rounded-2xl border border-orange-100 bg-white p-4 shadow-sm">
-                            <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-xl" aria-hidden="true">📍</span>
-                            <div><p class="text-xs font-bold uppercase tracking-wide text-gray-500">Venue</p><p class="font-bold text-brandBlue">Kolanukonda</p></div>
-                        </div>
-                    </div>
-                    <div class="mt-8 grid sm:grid-cols-2 gap-4">
-                        <div class="rounded-2xl bg-brandBlue p-5 text-white shadow-lg">
-                            <p class="text-sm font-semibold text-blue-200">Event ticket</p>
-                            <p class="mt-1 text-3xl font-extrabold">₹499 <span class="text-base font-medium text-blue-200">/ person</span></p>
-                        </div>
-                        <div class="rounded-2xl bg-brandOrange p-5 text-white shadow-lg">
-                            <p class="text-sm font-semibold text-orange-100">Kalyanam ticket</p>
-                            <p class="mt-1 text-3xl font-extrabold">₹999 <span class="text-base font-medium text-orange-100">/ couple</span></p>
+    <section id="festival" class="relative overflow-hidden bg-gradient-to-b from-[#fff7e8] via-white to-[#fffaf2] py-16 md:py-24">
+        <div class="pointer-events-none absolute -left-24 top-20 h-72 w-72 rounded-full bg-amber-200/40 blur-3xl"></div>
+        <div class="pointer-events-none absolute -right-24 top-[28rem] h-80 w-80 rounded-full bg-orange-200/30 blur-3xl"></div>
+        <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#0f2046] via-[#172d58] to-[#263d68] px-6 py-10 text-white shadow-2xl md:px-12 md:py-14" data-aos="fade-up">
+                <div class="pointer-events-none absolute -right-10 -top-20 h-72 w-72 rounded-full border border-amber-200/20"></div>
+                <div class="pointer-events-none absolute -right-2 -top-12 h-56 w-56 rounded-full border border-amber-200/20"></div>
+                <div class="relative grid items-center gap-8 md:grid-cols-[1fr_auto]">
+                    <div>
+                        <span class="inline-flex items-center gap-2 rounded-full border border-amber-200/30 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-amber-200">
+                            <span aria-hidden="true">✦</span> A day of devotion & celebration
+                        </span>
+                        <h2 class="mt-5 max-w-3xl break-words text-3xl font-extrabold leading-tight sm:text-4xl md:text-6xl">Karthika Vana <span class="text-amber-300">Mahotsavam</span></h2>
+                        <p class="mt-4 max-w-2xl text-lg leading-relaxed text-blue-100">Celebrate together with a joyful festival, a sacred Satyanarayana Swamy Vratam, and a day of community.</p>
+                        <div class="mt-6 flex flex-wrap gap-3 text-sm font-semibold">
+                            <span class="rounded-full bg-white/10 px-4 py-2">📅 22 November 2026</span>
+                            <span class="rounded-full bg-white/10 px-4 py-2">📍 Kolanukonda</span>
                         </div>
                     </div>
-                    <a href="#festival-registration" class="mt-8 inline-flex items-center justify-center gap-2 rounded-xl bg-brandOrange px-7 py-4 font-extrabold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-orange-600">
-                        Register for the Festival <span aria-hidden="true">→</span>
+                    <a href="#festival-registration" class="inline-flex items-center justify-center gap-2 rounded-xl bg-brandOrange px-7 py-4 font-extrabold text-white shadow-lg transition hover:-translate-y-1 hover:bg-orange-600">
+                        Register now <span aria-hidden="true">↓</span>
                     </a>
                 </div>
+                <span class="festival-float pointer-events-none absolute bottom-7 right-[39%] hidden text-3xl text-amber-300/70 md:block" aria-hidden="true">✦</span>
+            </div>
 
-                <div id="festival-registration" class="rounded-3xl border border-orange-100 bg-white p-6 shadow-2xl md:p-8" data-aos="fade-up" data-aos-delay="100">
+            <div class="mt-10 grid gap-6 lg:grid-cols-2">
+                <article class="festival-choice rounded-3xl border border-orange-100 bg-white p-6 shadow-lg md:p-8" data-aos="fade-up">
+                    <div class="flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                            <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-brandOrange">Festival entry</span>
+                            <h3 class="mt-2 text-2xl font-extrabold text-brandBlue">Event Ticket</h3>
+                        </div>
+                        <span class="rounded-2xl bg-orange-50 px-4 py-2 text-2xl font-extrabold text-brandOrange">₹499 <span class="text-sm font-semibold">/ person</span></span>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">Your event ticket includes:</p>
+                    <ul class="mt-5 grid gap-3 sm:grid-cols-2">
+                        <li class="flex items-center gap-3 text-sm font-semibold text-gray-700"><span class="text-brandOrange">✓</span> Lunch coupon</li>
+                        <li class="flex items-center gap-3 text-sm font-semibold text-gray-700"><span class="text-brandOrange">✓</span> Lucky draw</li>
+                        <li class="flex items-center gap-3 text-sm font-semibold text-gray-700"><span class="text-brandOrange">✓</span> Lucky dip</li>
+                        <li class="flex items-center gap-3 text-sm font-semibold text-gray-700"><span class="text-brandOrange">✓</span> Tea and snacks</li>
+                        <li class="flex items-center gap-3 text-sm font-semibold text-gray-700"><span class="text-brandOrange">✓</span> Housie ticket</li>
+                        <li class="flex items-center gap-3 text-sm font-semibold text-gray-700"><span class="text-brandOrange">✓</span> Return gift</li>
+                    </ul>
+                </article>
+                <article class="festival-choice rounded-3xl border border-amber-200 bg-gradient-to-br from-amber-50 to-white p-6 shadow-lg md:p-8" data-aos="fade-up" data-aos-delay="100">
+                    <div class="flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                            <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-brandOrange">Sacred pooja</span>
+                            <h3 class="mt-2 text-2xl font-extrabold text-brandBlue">Satyanarayana Swamy Vratam</h3>
+                        </div>
+                        <span class="rounded-2xl bg-white px-4 py-2 text-2xl font-extrabold text-brandOrange shadow-sm">₹999 <span class="text-sm font-semibold">/ couple</span></span>
+                    </div>
+                    <p class="mt-2 text-sm text-gray-500">One Vratam ticket is for a couple and includes:</p>
+                    <ul class="mt-5 grid gap-3 sm:grid-cols-2">
+                        <li class="flex items-center gap-3 text-sm font-semibold text-gray-700"><span class="text-brandOrange">ॐ</span> Vratam ticket for one couple</li>
+                        <li class="flex items-center gap-3 text-sm font-semibold text-gray-700"><span class="text-brandOrange">✦</span> Breakfast</li>
+                        <li class="flex items-center gap-3 text-sm font-semibold text-gray-700 sm:col-span-2"><span class="text-brandOrange">✦</span> Annavaram prasadam</li>
+                    </ul>
+                </article>
+            </div>
+
+            <div id="festival-registration" class="mt-10 grid items-start gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+                <div class="rounded-3xl border border-gray-100 bg-white p-6 shadow-xl md:p-8" data-aos="fade-up">
                     <div class="mb-6">
-                        <h3 class="text-2xl font-extrabold text-brandBlue">Reserve your tickets</h3>
-                        <p class="mt-1 text-sm text-gray-500">Enter your details, choose ticket quantities, and attach your payment screenshot.</p>
+                        <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-brandOrange">Save your place</span>
+                        <h3 class="mt-2 text-2xl font-extrabold text-brandBlue">Festival registration</h3>
+                        <p class="mt-1 text-sm text-gray-500">Choose your tickets or let us know if you’re interested in supporting the festival.</p>
                     </div>
                     <form id="karthikaRegistrationForm" method="post" action="api_engine.php?action=submit_karthika_registration" enctype="multipart/form-data" class="space-y-5">
                         <div class="absolute -left-[9999px]" aria-hidden="true">
                             <label for="festivalWebsite">Leave this field empty</label>
                             <input type="text" id="festivalWebsite" name="website" tabindex="-1" autocomplete="off">
                         </div>
-                        <div>
-                            <label for="festivalName" class="mb-2 block text-sm font-bold text-brandBlue">Full name <span class="text-red-500">*</span></label>
-                            <input id="festivalName" name="name" type="text" maxlength="150" autocomplete="name" required class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-brandOrange focus:ring-2 focus:ring-orange-100">
-                        </div>
-                        <div>
-                            <label for="festivalPhone" class="mb-2 block text-sm font-bold text-brandBlue">Phone number <span class="text-red-500">*</span></label>
-                            <input id="festivalPhone" name="phone" type="tel" inputmode="tel" maxlength="20" pattern="[0-9+() -]{7,20}" autocomplete="tel" required class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-brandOrange focus:ring-2 focus:ring-orange-100">
-                        </div>
-                        <div class="grid sm:grid-cols-2 gap-4">
+                        <div class="grid gap-4 sm:grid-cols-2">
                             <div>
-                                <label for="eventTickets" class="mb-2 block text-sm font-bold text-brandBlue">Event tickets <span class="text-xs font-medium text-gray-500">(₹499 each)</span></label>
+                                <label for="festivalName" class="mb-2 block text-sm font-bold text-brandBlue">Full name <span class="text-red-500">*</span></label>
+                                <input id="festivalName" name="name" type="text" maxlength="150" autocomplete="name" required class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-brandOrange focus:ring-2 focus:ring-orange-100">
+                            </div>
+                            <div>
+                                <label for="festivalPhone" class="mb-2 block text-sm font-bold text-brandBlue">Phone number <span class="text-red-500">*</span></label>
+                                <input id="festivalPhone" name="phone" type="tel" inputmode="tel" maxlength="20" pattern="[0-9+\(\) \-]{7,20}" autocomplete="tel" required class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-brandOrange focus:ring-2 focus:ring-orange-100">
+                            </div>
+                        </div>
+                        <div class="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <label for="eventTickets" class="mb-2 block text-sm font-bold text-brandBlue">Event tickets <span class="text-xs font-medium text-gray-500">₹499 each</span></label>
                                 <input id="eventTickets" name="event_tickets" type="number" min="0" max="999999" step="1" value="0" required class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-brandOrange focus:ring-2 focus:ring-orange-100">
                             </div>
                             <div>
-                                <label for="kalyanamTickets" class="mb-2 block text-sm font-bold text-brandBlue">Kalyanam tickets <span class="text-xs font-medium text-gray-500">(₹999 per couple)</span></label>
-                                <input id="kalyanamTickets" name="kalyanam_tickets" type="number" min="0" max="999999" step="1" value="0" required class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-brandOrange focus:ring-2 focus:ring-orange-100">
+                                <label for="vratamTickets" class="mb-2 block text-sm font-bold text-brandBlue">Vratam tickets <span class="text-xs font-medium text-gray-500">₹999 per couple</span></label>
+                                <input id="vratamTickets" name="vratam_tickets" type="number" min="0" max="999999" step="1" value="0" required class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 outline-none transition focus:border-brandOrange focus:ring-2 focus:ring-orange-100">
                             </div>
                         </div>
-                        <div class="flex items-center justify-between rounded-xl bg-orange-50 px-4 py-3">
-                            <span class="font-bold text-brandBlue">Total amount</span>
-                            <output id="festivalTotal" for="eventTickets kalyanamTickets" class="text-xl font-extrabold text-brandOrange" aria-live="polite">₹0</output>
-                        </div>
-                        <div class="grid sm:grid-cols-[150px_1fr] gap-4 rounded-2xl border border-dashed border-orange-300 bg-orange-50/60 p-4">
-                            <div class="flex min-h-[140px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-orange-300 bg-white p-3 text-center">
-                                <span class="text-3xl text-orange-300" aria-hidden="true">▦</span>
-                                <span class="mt-2 text-xs font-extrabold uppercase tracking-wide text-gray-500">Payment QR</span>
-                                <span class="text-xs text-gray-400">Coming soon</span>
+
+                        <fieldset class="rounded-2xl border border-amber-100 bg-amber-50/60 p-4">
+                            <legend class="px-2 text-sm font-extrabold text-brandBlue">Interested in supporting the festival?</legend>
+                            <p class="mb-3 text-xs leading-relaxed text-gray-600">Select any options and our team will contact you with details. No amount is added until pricing is confirmed.</p>
+                            <div class="grid gap-3 sm:grid-cols-3">
+                                <label class="flex cursor-pointer items-center gap-2 rounded-xl border border-amber-100 bg-white p-3 text-sm font-bold text-brandBlue"><input type="checkbox" name="interest_stalls" value="1" class="accent-orange-500"> Stall</label>
+                                <label class="flex cursor-pointer items-center gap-2 rounded-xl border border-amber-100 bg-white p-3 text-sm font-bold text-brandBlue"><input type="checkbox" name="interest_advertisement" value="1" class="accent-orange-500"> Advertisement</label>
+                                <label class="flex cursor-pointer items-center gap-2 rounded-xl border border-amber-100 bg-white p-3 text-sm font-bold text-brandBlue"><input type="checkbox" name="interest_sponsorship" value="1" class="accent-orange-500"> Sponsorship</label>
                             </div>
-                            <div class="self-center">
-                                <h4 class="font-bold text-brandBlue">Payment QR not configured yet</h4>
-                                <p class="mt-1 text-sm leading-relaxed text-gray-600">We’ll add the official payment QR here when it is provided. If you have already paid using instructions from the organizers, upload your screenshot below.</p>
-                            </div>
+                            <label for="festivalInterestDetails" class="mb-2 mt-4 block text-xs font-bold text-gray-600">Optional details or preferred package</label>
+                            <textarea id="festivalInterestDetails" name="interest_details" maxlength="500" rows="2" placeholder="Tell us what you have in mind..." class="w-full resize-y rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-brandOrange focus:ring-2 focus:ring-orange-100"></textarea>
+                        </fieldset>
+
+                        <div class="flex items-center justify-between rounded-xl bg-brandBlue px-4 py-4 text-white">
+                            <div><span class="block text-xs font-semibold text-blue-200">Ticket total</span><span class="text-sm font-bold">Enter this amount in your UPI app</span></div>
+                            <output id="festivalTotal" for="eventTickets vratamTickets" class="text-2xl font-extrabold text-amber-300" aria-live="polite">₹0</output>
                         </div>
                         <div>
-                            <label for="paymentScreenshot" class="mb-2 block text-sm font-bold text-brandBlue">Payment screenshot <span class="text-red-500">*</span></label>
-                            <input id="paymentScreenshot" name="payment_screenshot" type="file" accept="image/jpeg,image/png,image/webp" required class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-brandBlue file:px-4 file:py-2 file:font-bold file:text-white">
-                            <p class="mt-1 text-xs text-gray-500">JPEG, PNG, or WebP; maximum file size 5 MB.</p>
+                            <label for="paymentScreenshot" class="mb-2 block text-sm font-bold text-brandBlue">Payment screenshot <span id="screenshotRequiredMark" class="text-red-500">*</span></label>
+                            <input id="paymentScreenshot" name="payment_screenshot" type="file" accept="image/jpeg,image/png,image/webp" class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-sm text-gray-600 file:mr-4 file:rounded-lg file:border-0 file:bg-brandBlue file:px-4 file:py-2 file:font-bold file:text-white">
+                            <p id="screenshotHelp" class="mt-1 text-xs text-gray-500">Required when registering for paid tickets. JPEG, PNG, or WebP; maximum 5 MB.</p>
                         </div>
                         <div id="festivalFormMessage" class="hidden rounded-xl p-4 text-sm font-semibold" role="status" aria-live="polite"></div>
-                        <button id="festivalSubmitButton" type="submit" class="w-full rounded-xl bg-brandOrange px-6 py-4 font-extrabold text-white shadow-lg transition hover:bg-orange-600 disabled:cursor-wait disabled:opacity-60">
-                            Submit Festival Registration
+                        <button id="festivalSubmitButton" type="submit" class="w-full rounded-xl bg-brandOrange px-6 py-4 font-extrabold text-white shadow-lg transition hover:-translate-y-0.5 hover:bg-orange-600 disabled:cursor-wait disabled:opacity-60">
+                            Submit Registration
                         </button>
                     </form>
                 </div>
+
+                <aside class="space-y-6" data-aos="fade-up" data-aos-delay="100">
+                    <div class="festival-glow overflow-hidden rounded-3xl border border-sky-100 bg-white p-5 shadow-xl sm:p-7">
+                        <div class="mb-4 flex items-center justify-between gap-3">
+                            <div>
+                                <span class="text-xs font-extrabold uppercase tracking-[0.16em] text-brandOrange">Quick & secure payment</span>
+                                <h3 class="mt-1 text-xl font-extrabold text-brandBlue">Scan to pay</h3>
+                            </div>
+                            <span class="rounded-full bg-sky-50 px-3 py-1 text-xs font-extrabold text-sky-700">UPI accepted</span>
+                        </div>
+                        <div class="mx-auto max-w-sm overflow-hidden rounded-2xl border border-gray-100 bg-gray-50 p-2">
+                            <img src="assets/images/karthika-payment-qr.png" alt="Paytm UPI payment QR for Karthika Vana Mahotsavam" width="768" height="1244" class="h-auto w-full rounded-xl" loading="lazy">
+                        </div>
+                        <div class="mt-4 rounded-2xl bg-[#f0f9ff] p-4 text-center">
+                            <p class="text-xs font-bold uppercase tracking-wide text-gray-500">UPI ID</p>
+                            <p class="mt-1 select-all text-lg font-extrabold text-brandBlue">9347720596@ptyes</p>
+                            <p class="mt-2 text-xs leading-relaxed text-gray-600">Pay the exact ticket total shown in the form. After payment, upload the screenshot to complete your registration.</p>
+                        </div>
+                    </div>
+                    <div class="rounded-3xl border border-orange-100 bg-gradient-to-br from-orange-50 to-white p-6">
+                        <h3 class="text-lg font-extrabold text-brandBlue">Stalls, ads & sponsorships</h3>
+                        <p class="mt-2 text-sm leading-relaxed text-gray-600">Want to set up a stall, advertise, or sponsor the festival? Select your interest in the form. Our team will contact you with available packages and pricing.</p>
+                    </div>
+                </aside>
             </div>
         </div>
     </section>
@@ -308,26 +375,43 @@
         });
 
         // Header/Footer Fetch
-        fetch('header.html?v=6').then(r => r.text()).then(d => document.getElementById('header-placeholder').innerHTML = d);
+        fetch('header.html?v=7').then(r => r.text()).then(d => document.getElementById('header-placeholder').innerHTML = d);
         fetch('footer.html?v=5').then(r => r.text()).then(d => document.getElementById('footer-placeholder').innerHTML = d);
 
         const karthikaForm = document.getElementById('karthikaRegistrationForm');
         const eventTicketInput = document.getElementById('eventTickets');
-        const kalyanamTicketInput = document.getElementById('kalyanamTickets');
+        const vratamTicketInput = document.getElementById('vratamTickets');
         const festivalTotal = document.getElementById('festivalTotal');
         const festivalMessage = document.getElementById('festivalFormMessage');
         const festivalSubmitButton = document.getElementById('festivalSubmitButton');
+        const paymentScreenshot = document.getElementById('paymentScreenshot');
+        const screenshotRequiredMark = document.getElementById('screenshotRequiredMark');
+        const screenshotHelp = document.getElementById('screenshotHelp');
 
         function updateFestivalTotal() {
             const eventCount = Math.max(0, Number(eventTicketInput.value) || 0);
-            const coupleCount = Math.max(0, Number(kalyanamTicketInput.value) || 0);
-            festivalTotal.textContent = '₹' + (eventCount * 499 + coupleCount * 999).toLocaleString('en-IN');
+            const vratamCount = Math.max(0, Number(vratamTicketInput.value) || 0);
+            const total = eventCount * 499 + vratamCount * 999;
+            festivalTotal.textContent = '₹' + total.toLocaleString('en-IN');
+            paymentScreenshot.required = total > 0;
+            screenshotRequiredMark.classList.toggle('hidden', total === 0);
+            screenshotHelp.textContent = total > 0
+                ? 'Required when registering for paid tickets. JPEG, PNG, or WebP; maximum 5 MB.'
+                : 'Required for paid tickets only. For interest-only enquiries, leave this blank.';
         }
 
         eventTicketInput.addEventListener('input', updateFestivalTotal);
-        kalyanamTicketInput.addEventListener('input', updateFestivalTotal);
+        vratamTicketInput.addEventListener('input', updateFestivalTotal);
+        updateFestivalTotal();
         karthikaForm.addEventListener('submit', async function(event) {
             event.preventDefault();
+            const hasTickets = Number(eventTicketInput.value) > 0 || Number(vratamTicketInput.value) > 0;
+            const hasInterest = karthikaForm.querySelector('input[name="interest_stalls"]:checked, input[name="interest_advertisement"]:checked, input[name="interest_sponsorship"]:checked');
+            if (!hasTickets && !hasInterest) {
+                festivalMessage.className = 'rounded-xl bg-red-50 p-4 text-sm font-semibold text-red-700';
+                festivalMessage.textContent = 'Choose a ticket or select a stall, advertisement, or sponsorship enquiry.';
+                return;
+            }
             festivalMessage.classList.add('hidden');
             festivalSubmitButton.disabled = true;
             festivalSubmitButton.textContent = 'Submitting...';
@@ -351,7 +435,7 @@
                 festivalMessage.textContent = error.message || 'Unable to submit your registration. Please try again.';
             } finally {
                 festivalSubmitButton.disabled = false;
-                festivalSubmitButton.textContent = 'Submit Festival Registration';
+                festivalSubmitButton.textContent = 'Submit Registration';
             }
         });
 
