@@ -81,3 +81,74 @@ function karthika_previous_upload_directory()
 {
     return dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'karthika-private';
 }
+
+function karthika_load_payment_proof(PDO $pdo, $registration_id)
+{
+    $stmt = $pdo->prepare("
+        SELECT full_name, phone, event_ticket_count, satyanarayana_vratam_couple_count,
+               total_amount, payment_screenshot, payment_screenshot_data, payment_status,
+               interest_stalls, interest_advertisement, interest_sponsorship, interest_details, created_at
+        FROM karthika_registrations
+        WHERE id = ?
+    ");
+    $stmt->execute([$registration_id]);
+    $registration = $stmt->fetch();
+    if (!$registration) {
+        return null;
+    }
+
+    $image_bytes = $registration['payment_screenshot_data'];
+    if (is_resource($image_bytes)) {
+        $image_bytes = stream_get_contents($image_bytes);
+        if ($image_bytes === false) {
+            throw new RuntimeException('Unable to read the payment proof stored in the database.');
+        }
+    }
+
+    if (!is_string($image_bytes) || $image_bytes === '') {
+        $filename = $registration['payment_screenshot'];
+        if (!$filename || !preg_match('/^[a-f0-9]{32}\.(jpg|png|webp)$/', $filename)) {
+            throw new RuntimeException('No payment proof is associated with this registration.');
+        }
+
+        $image_path = '';
+        $upload_directories = [
+            karthika_private_upload_directory(),
+            karthika_previous_upload_directory(),
+            karthika_legacy_upload_directory()
+        ];
+        foreach ($upload_directories as $upload_directory) {
+            $candidate = $upload_directory . DIRECTORY_SEPARATOR . $filename;
+            if (is_file($candidate)) {
+                $image_path = $candidate;
+                break;
+            }
+        }
+        if ($image_path === '') {
+            throw new RuntimeException('The payment proof file is missing from the server.');
+        }
+        if (!is_readable($image_path)) {
+            throw new RuntimeException('The payment proof file is not readable by the server.');
+        }
+
+        $image_bytes = file_get_contents($image_path);
+        if ($image_bytes === false || $image_bytes === '') {
+            throw new RuntimeException('The payment proof file is empty or could not be read.');
+        }
+    }
+
+    if (!class_exists('finfo')) {
+        throw new RuntimeException('The PHP fileinfo extension is required to read payment proofs.');
+    }
+    $file_info = new finfo(FILEINFO_MIME_TYPE);
+    $mime_type = $file_info->buffer($image_bytes);
+    if (!in_array($mime_type, ['image/jpeg', 'image/png', 'image/webp'], true)) {
+        throw new RuntimeException('The payment proof is not a supported image format.');
+    }
+
+    return [
+        'registration' => $registration,
+        'image_bytes' => $image_bytes,
+        'mime_type' => $mime_type
+    ];
+}

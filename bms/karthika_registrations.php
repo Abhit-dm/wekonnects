@@ -268,6 +268,7 @@ $page_count = isset($filtered_count) ? max(1, (int)ceil($filtered_count / $page_
                             );
                             $image_id = (int)$registration['id'];
                             $image_url = 'actions/karthika_payment_image.php?id=' . $image_id;
+                            $image_data_url = 'actions/karthika_payment_image_data.php?id=' . $image_id;
                             ?>
                             <tr>
                                 <td><?php echo htmlspecialchars(date('d M Y, h:i A', strtotime($registration['created_at'])), ENT_QUOTES, 'UTF-8'); ?></td>
@@ -342,8 +343,8 @@ $page_count = isset($filtered_count) ? max(1, (int)ceil($filtered_count / $page_
                                 </td>
                                 <td>
                                     <?php if ($registration['payment_screenshot'] !== ''): ?>
-                                        <a href="<?php echo $image_url; ?>" target="_blank" rel="noopener">
-                                            <img class="proof-preview" src="<?php echo htmlspecialchars($image_url, ENT_QUOTES, 'UTF-8'); ?>" alt="Payment proof for <?php echo htmlspecialchars($registration['full_name'], ENT_QUOTES, 'UTF-8'); ?>" loading="lazy" onerror="if (!this.dataset.fallback) { this.dataset.fallback = '1'; this.src = '../actions/karthika_payment_image.php?id=<?php echo $image_id; ?>'; } else { this.hidden = true; this.nextElementSibling.hidden = false; }">
+                                        <a href="<?php echo htmlspecialchars($image_url, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">
+                                            <img class="proof-preview" src="<?php echo htmlspecialchars($image_data_url, ENT_QUOTES, 'UTF-8'); ?>" alt="Payment proof for <?php echo htmlspecialchars($registration['full_name'], ENT_QUOTES, 'UTF-8'); ?>" loading="lazy" onerror="if (!this.dataset.fallback) { this.dataset.fallback = '1'; this.src = '../actions/karthika_payment_image_data.php?id=<?php echo $image_id; ?>'; } else { this.hidden = true; this.nextElementSibling.hidden = false; }">
                                             <span class="proof-fallback" hidden>Preview unavailable; use View proof</span>
                                         </a>
                                         <a class="proof" href="<?php echo $image_url; ?>" target="_blank" rel="noopener"><i class="fa-regular fa-image"></i> View proof</a>
