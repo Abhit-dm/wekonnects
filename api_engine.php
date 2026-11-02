@@ -165,6 +165,7 @@ try {
 
             try {
                 $filename = '';
+                $screenshot_mime = null;
                 $upload_path = null;
                 if ($has_screenshot) {
                     if (!is_uploaded_file($screenshot['tmp_name']) || $screenshot['size'] > 5 * 1024 * 1024) {
@@ -185,12 +186,12 @@ try {
                     }
 
                     require_once __DIR__ . '/bms/includes/karthika_event.php';
-                    $upload_directory = karthika_private_upload_directory();
                     $filename = bin2hex(random_bytes(16)) . $allowed_images[$mime_type];
-                    $upload_path = $upload_directory . DIRECTORY_SEPARATOR . $filename;
+                    $upload_path = karthika_private_upload_directory() . DIRECTORY_SEPARATOR . $filename;
                     if (!move_uploaded_file($screenshot['tmp_name'], $upload_path)) {
                         throw new RuntimeException('Unable to store the uploaded payment screenshot.');
                     }
+                    $screenshot_mime = $mime_type;
                 }
 
                 require_once __DIR__ . '/bms/includes/karthika_event.php';
@@ -199,23 +200,23 @@ try {
                 $stmt = $pdo->prepare("
                     INSERT INTO karthika_registrations
                         (full_name, phone, event_ticket_count, satyanarayana_vratam_couple_count,
-                         total_amount, payment_screenshot, payment_status, interest_stalls,
+                         total_amount, payment_screenshot, payment_screenshot_mime, payment_status, interest_stalls,
                          interest_advertisement, interest_sponsorship, interest_details)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ");
-                $stmt->execute([
-                    $name,
-                    $phone,
-                    $event_tickets,
-                    $vratam_tickets,
-                    $total_amount,
-                    $filename,
-                    $total_amount > 0 ? 'Pending' : 'Inquiry',
-                    $interest_stalls,
-                    $interest_advertisement,
-                    $interest_sponsorship,
-                    $interest_details
-                ]);
+                $stmt->bindValue(1, $name);
+                $stmt->bindValue(2, $phone);
+                $stmt->bindValue(3, $event_tickets, PDO::PARAM_INT);
+                $stmt->bindValue(4, $vratam_tickets, PDO::PARAM_INT);
+                $stmt->bindValue(5, $total_amount, PDO::PARAM_INT);
+                $stmt->bindValue(6, $filename);
+                $stmt->bindValue(7, $screenshot_mime);
+                $stmt->bindValue(8, $total_amount > 0 ? 'Pending' : 'Inquiry');
+                $stmt->bindValue(9, $interest_stalls, PDO::PARAM_INT);
+                $stmt->bindValue(10, $interest_advertisement, PDO::PARAM_INT);
+                $stmt->bindValue(11, $interest_sponsorship, PDO::PARAM_INT);
+                $stmt->bindValue(12, $interest_details);
+                $stmt->execute();
                 http_response_code(201);
                 echo json_encode([
                     'success' => true,
@@ -225,7 +226,7 @@ try {
                 ]);
                 exit;
             } catch (Exception $e) {
-                if (isset($upload_path) && $upload_path && is_file($upload_path)) {
+                if ($upload_path && is_file($upload_path)) {
                     unlink($upload_path);
                 }
                 error_log('Karthika registration could not be saved: ' . $e->getMessage());

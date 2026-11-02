@@ -11,6 +11,8 @@ function ensure_karthika_registrations_table(PDO $pdo)
             satyanarayana_vratam_couple_count INT UNSIGNED NOT NULL DEFAULT 0,
             total_amount INT UNSIGNED NOT NULL,
             payment_screenshot VARCHAR(64) NOT NULL DEFAULT '',
+            payment_screenshot_data MEDIUMBLOB NULL,
+            payment_screenshot_mime VARCHAR(32) DEFAULT NULL,
             payment_status VARCHAR(24) NOT NULL DEFAULT 'Pending',
             whatsapp_status VARCHAR(24) NOT NULL DEFAULT 'Pending',
             whatsapp_sent_at DATETIME DEFAULT NULL,
@@ -27,6 +29,8 @@ function ensure_karthika_registrations_table(PDO $pdo)
     ");
 
     $columns = [
+        'payment_screenshot_data' => 'MEDIUMBLOB NULL AFTER payment_screenshot',
+        'payment_screenshot_mime' => 'VARCHAR(32) DEFAULT NULL AFTER payment_screenshot_data',
         'whatsapp_status' => "VARCHAR(24) NOT NULL DEFAULT 'Pending' AFTER payment_status",
         'whatsapp_sent_at' => 'DATETIME DEFAULT NULL AFTER whatsapp_status',
         'location_status' => "VARCHAR(24) NOT NULL DEFAULT 'Pending' AFTER whatsapp_sent_at",
@@ -54,10 +58,21 @@ function ensure_karthika_registrations_table(PDO $pdo)
 
 function karthika_private_upload_directory()
 {
-    $directory = dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'wekonnects_private_uploads' . DIRECTORY_SEPARATOR . 'karthika';
+    $directory = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'karthika-private';
     if (!is_dir($directory) && !mkdir($directory, 0750, true) && !is_dir($directory)) {
         throw new RuntimeException('Unable to create the private payment upload directory.');
     }
 
+    $access_rules = "<IfModule mod_authz_core.c>\n    Require all denied\n</IfModule>\n<IfModule !mod_authz_core.c>\n    Order allow,deny\n    Deny from all\n</IfModule>\nOptions -Indexes\n";
+    $access_file = $directory . DIRECTORY_SEPARATOR . '.htaccess';
+    if (file_put_contents($access_file, $access_rules, LOCK_EX) === false) {
+        throw new RuntimeException('Unable to protect the payment upload directory from direct web access.');
+    }
+
     return $directory;
+}
+
+function karthika_legacy_upload_directory()
+{
+    return dirname(__DIR__, 3) . DIRECTORY_SEPARATOR . 'wekonnects_private_uploads' . DIRECTORY_SEPARATOR . 'karthika';
 }

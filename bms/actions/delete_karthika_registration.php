@@ -53,10 +53,15 @@ try {
         } else {
             $proof_cleanup_failed = false;
             if ($filename !== '' && preg_match('/^[a-f0-9]{32}\.(jpg|png|webp)$/', $filename)) {
-                $path = karthika_private_upload_directory() . DIRECTORY_SEPARATOR . $filename;
-                if (is_file($path) && !unlink($path)) {
-                    error_log('Karthika payment proof could not be removed for registration ' . (int)$registration_id . '.');
-                    $proof_cleanup_failed = true;
+                $paths = [
+                    karthika_private_upload_directory() . DIRECTORY_SEPARATOR . $filename,
+                    karthika_legacy_upload_directory() . DIRECTORY_SEPARATOR . $filename
+                ];
+                foreach ($paths as $path) {
+                    if (is_file($path) && !unlink($path)) {
+                        error_log('Karthika payment proof could not be removed for registration ' . (int)$registration_id . '.');
+                        $proof_cleanup_failed = true;
+                    }
                 }
             }
             $_SESSION['success_msg'] = $proof_cleanup_failed

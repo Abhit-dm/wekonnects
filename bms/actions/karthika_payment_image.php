@@ -19,16 +19,56 @@ if ($registration_id === false || $registration_id === null) {
 
 try {
     ensure_karthika_registrations_table($pdo);
-    $stmt = $pdo->prepare('SELECT payment_screenshot FROM karthika_registrations WHERE id = ?');
+    $stmt = $pdo->prepare('SELECT payment_screenshot, payment_screenshot_data FROM karthika_registrations WHERE id = ?');
     $stmt->execute([$registration_id]);
-    $filename = $stmt->fetchColumn();
+    $proof = $stmt->fetch();
 
+    if (!$proof) {
+        http_response_code(404);
+        exit('Payment proof not found.');
+    }
+
+    $image_data = $proof['payment_screenshot_data'];
+    if (is_resource($image_data)) {
+        $image_data = stream_get_contents($image_data);
+        if ($image_data === false) {
+            throw new RuntimeException('Unable to read the stored payment proof.');
+        }
+    }
+    if (is_string($image_data) && $image_data !== '') {
+        if (!class_exists('finfo')) {
+            throw new RuntimeException('The PHP fileinfo extension is required to serve payment proofs.');
+        }
+
+        $file_info = new finfo(FILEINFO_MIME_TYPE);
+        $mime_type = $file_info->buffer($image_data);
+        if (!in_array($mime_type, ['image/jpeg', 'image/png', 'image/webp'], true)) {
+            http_response_code(404);
+            exit('Payment proof is not a supported image.');
+        }
+
+        header('Content-Type: ' . $mime_type);
+        header('Content-Length: ' . strlen($image_data));
+        header('Content-Disposition: inline; filename="payment-proof-' . (int)$registration_id . '"');
+        header('Cache-Control: private, no-store, max-age=0');
+        header('X-Content-Type-Options: nosniff');
+        echo $image_data;
+        exit;
+    }
+
+    $filename = $proof['payment_screenshot'];
     if (!$filename || !preg_match('/^[a-f0-9]{32}\.(jpg|png|webp)$/', $filename)) {
         http_response_code(404);
         exit('Payment proof not found.');
     }
 
     $path = karthika_private_upload_directory() . DIRECTORY_SEPARATOR . $filename;
+    if (!is_file($path)) {
+        $legacy_path = karthika_legacy_upload_directory() . DIRECTORY_SEPARATOR . $filename;
+        if (is_file($legacy_path)) {
+            $path = $legacy_path;
+        }
+    }
     if (!is_file($path)) {
         error_log('Karthika payment proof file is missing for registration ' . (int)$registration_id . '.');
         http_response_code(404);
