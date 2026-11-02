@@ -58,52 +58,62 @@ try {
             http_response_code(404);
             exit('Payment proof is not a supported image.');
         }
+        $image_bytes = $image_data;
+    } else {
+        $filename = $proof['payment_screenshot'];
+        if (!$filename || !preg_match('/^[a-f0-9]{32}\.(jpg|png|webp)$/', $filename)) {
+            http_response_code(404);
+            exit('Payment proof not found.');
+        }
 
-        header('Content-Type: ' . $mime_type);
-        header('Content-Length: ' . strlen($image_data));
-        header('Content-Disposition: inline; filename="payment-proof-' . (int)$registration_id . '"');
-        header('Cache-Control: private, no-store, max-age=0');
-        header('X-Content-Type-Options: nosniff');
-        echo $image_data;
-        exit;
-    }
+        $path = '';
+        $upload_directories = [
+            karthika_private_upload_directory(),
+            karthika_previous_upload_directory(),
+            karthika_legacy_upload_directory()
+        ];
+        foreach ($upload_directories as $upload_directory) {
+            $candidate = $upload_directory . DIRECTORY_SEPARATOR . $filename;
+            if (is_file($candidate)) {
+                $path = $candidate;
+                break;
+            }
+        }
+        if ($path === '') {
+            error_log('Karthika payment proof file is missing for registration ' . (int)$registration_id . '.');
+            http_response_code(404);
+            exit('Payment proof file not found.');
+        }
+        if (!is_readable($path)) {
+            error_log('Karthika payment proof file is unreadable for registration ' . (int)$registration_id . '.');
+            http_response_code(500);
+            exit('Payment proof file is not readable by the server.');
+        }
 
-    $filename = $proof['payment_screenshot'];
-    if (!$filename || !preg_match('/^[a-f0-9]{32}\.(jpg|png|webp)$/', $filename)) {
-        http_response_code(404);
-        exit('Payment proof not found.');
-    }
-
-    $path = '';
-    $upload_directories = [
-        karthika_private_upload_directory(),
-        karthika_previous_upload_directory(),
-        karthika_legacy_upload_directory()
-    ];
-    foreach ($upload_directories as $upload_directory) {
-        $candidate = $upload_directory . DIRECTORY_SEPARATOR . $filename;
-        if (is_file($candidate)) {
-            $path = $candidate;
-            break;
+        $image_bytes = file_get_contents($path);
+        if ($image_bytes === false || $image_bytes === '') {
+            error_log('Karthika payment proof file is empty or could not be read for registration ' . (int)$registration_id . '.');
+            http_response_code(500);
+            exit('Payment proof file is empty or could not be read.');
         }
     }
-    if ($path === '' || !class_exists('finfo')) {
-        http_response_code(404);
-        exit('Payment proof file not found.');
+
+    if (!class_exists('finfo')) {
+        throw new RuntimeException('The PHP fileinfo extension is required to serve payment proofs.');
     }
     $file_info = new finfo(FILEINFO_MIME_TYPE);
-    $mime_type = $file_info->file($path);
+    $mime_type = $file_info->buffer($image_bytes);
     if (!in_array($mime_type, ['image/jpeg', 'image/png', 'image/webp'], true)) {
         http_response_code(404);
         exit('Payment proof is not a supported image.');
     }
 
     header('Content-Type: ' . $mime_type);
-    header('Content-Length: ' . filesize($path));
-    header('Content-Disposition: inline; filename="payment-proof-' . (int)$registration_id . '.' . strtolower(pathinfo($filename, PATHINFO_EXTENSION)) . '"');
+    header('Content-Length: ' . strlen($image_bytes));
+    header('Content-Disposition: inline; filename="payment-proof-' . (int)$registration_id . '"');
     header('Cache-Control: private, no-store, max-age=0');
     header('X-Content-Type-Options: nosniff');
-    readfile($path);
+    echo $image_bytes;
 } catch (Throwable $e) {
     error_log('Karthika payment proof could not be served: ' . $e->getMessage());
     http_response_code(500);
