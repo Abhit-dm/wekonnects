@@ -11,12 +11,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = trim($_POST['password']);
 
     // Fetch the user from the database
-    $stmt = $pdo->prepare("SELECT id, first_name, password_hash, system_role FROM users WHERE email = ?");
+    $stmt = $pdo->prepare("SELECT id, first_name, password_hash, system_role, status FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch();
+    $employee_access_allowed = !$user
+        || strpos($user['system_role'], 'EMP_') !== 0
+        || $user['status'] === 'Active';
 
     // Verify User exists AND Password is correct
-    if ($user && password_verify($password, $user['password_hash'])) {
+    if ($user && $employee_access_allowed && password_verify($password, $user['password_hash'])) {
         
         // SECURITY: Regenerate session ID to prevent hacking
         session_regenerate_id(true);

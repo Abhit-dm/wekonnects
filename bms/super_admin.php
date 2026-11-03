@@ -93,24 +93,27 @@ try {
         .btn-export { background: #10b981; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: 700; cursor: pointer; text-decoration: none; font-size: 12px; display: inline-flex; align-items: center; gap: 8px;}
         .btn-export:hover { background: #059669; }
         @media (max-width: 760px) {
-            body { display: block; }
-            .sidebar { position: sticky; width: 100%; height: auto; max-height: 38vh; flex-direction: row; overflow: auto; top: 0; }
-            .sidebar-brand, .sidebar-heading, .sidebar-divider, .sidebar > div[style*="flex-grow"] { display: none; }
-            .sidebar .nav-item { flex: 0 0 auto; padding: 12px; border-right: 0; white-space: nowrap; }
-            .main-content { margin-left: 0; padding: 18px; }
-            .sa-header { align-items: flex-start; gap: 14px; padding: 20px; }
-            .sa-header h1 { font-size: 22px; }
+            html, body { width: 100%; overflow-x: hidden; }
+            .main-content { width: 100%; margin: 0; padding: 16px; }
+            .sa-header { justify-content: space-between; align-items: center; gap: 10px; padding: 16px; margin-bottom: 20px; }
+            .sa-header h1 { font-size: clamp(18px, 4vw, 22px); line-height: 1.25; }
+            .sa-badge { flex: 0 0 auto; font-size: 10px; padding: 5px 8px; }
             .kpi-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 24px; }
-            .kpi-card { padding: 18px; }
-            .kpi-value { font-size: 25px; }
-            .module-card { padding: 18px; }
+            .kpi-card { min-width: 0; padding: 16px; }
+            .kpi-label { font-size: 10px; line-height: 1.4; }
+            .kpi-value { font-size: clamp(20px, 5vw, 25px); overflow-wrap: anywhere; }
+            .module-card { min-width: 0; padding: 18px; }
             .table-container { overflow-x: auto; }
             .table-container table { min-width: 720px; }
         }
         @media (max-width: 420px) {
-            .kpi-row { grid-template-columns: 1fr; }
-            .sa-header { flex-direction: column; }
-            .sa-header h1 { font-size: 20px; }
+            .main-content { padding: 12px; }
+            .sa-header { align-items: flex-start; }
+            .sa-header h1 { font-size: 18px; }
+            .sa-badge { letter-spacing: .04em; }
+            .kpi-row { gap: 9px; }
+            .kpi-card { padding: 13px; }
+            .kpi-value { font-size: 21px; }
         }
     </style>
 </head>

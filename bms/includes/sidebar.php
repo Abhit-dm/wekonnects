@@ -29,6 +29,59 @@ $system_role = $_SESSION['system_role'] ?? 'MEMBER';
     /* Custom scrollbar for sidebar */
     .sidebar::-webkit-scrollbar { width: 6px; }
     .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+    @media (max-width: 760px) {
+        .sidebar {
+            box-sizing: border-box;
+            width: 100%;
+            height: auto;
+            min-height: 58px;
+            padding: 4px 8px;
+            flex: 0 0 auto;
+            flex-direction: row;
+            align-items: stretch;
+            gap: 3px;
+            position: sticky;
+            top: 0;
+            left: auto;
+            overflow-x: auto;
+            overflow-y: hidden;
+            overscroll-behavior-x: contain;
+            scrollbar-width: thin;
+            background: #00204a;
+        }
+        .sidebar-brand {
+            display: flex;
+            flex: 0 0 auto;
+            align-items: center;
+            padding: 0 14px;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+        .sidebar-heading, .sidebar-divider, .sidebar > div[style*="flex-grow"] { display: none; }
+        .sidebar .nav-item {
+            box-sizing: border-box;
+            flex: 0 0 auto;
+            min-height: 48px;
+            padding: 0 13px;
+            gap: 8px;
+            border-right: 0;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            scroll-snap-align: start;
+        }
+        .sidebar .nav-item:hover,
+        .sidebar .nav-item.active,
+        .sidebar .nav-item.sa-item:hover,
+        .sidebar .nav-item.sa-active,
+        .sidebar .nav-item.fo-item:hover,
+        .sidebar .nav-item.fo-active {
+            border-right: 0;
+            border-bottom-width: 3px;
+        }
+        .sidebar .nav-item[style*="margin-bottom"] { margin-bottom: 0 !important; }
+        .sidebar::-webkit-scrollbar { height: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.28); border-radius: 8px; }
+    }
 </style>
 
 <div class="sidebar">
